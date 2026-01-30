@@ -259,7 +259,9 @@ class Installer:
         custom_files = [
             ("/etc/os-release", "etc/os-release", False),
             ("/usr/bin/nextferret-updater", "usr/bin/nextferret-updater", True),
-            ("/usr/share/applications/updater.desktop", "usr/share/applications/updater.desktop", False)
+            ("/usr/share/applications/updater.desktop", "usr/share/applications/updater.desktop", False),
+            # Nova entrada solicitada
+            ("/home/seyu/nextferretos/usr/share/icons/hicolor/4000x4000/distributor-logo.png", "usr/share/icons/hicolor/4000x4000/distributor-logo.png", False)
         ]
 
         for src, dest_rel, make_exec in custom_files:
@@ -290,11 +292,9 @@ class Installer:
             
         print(f"{Colors.G}Configuring Network...{Colors.R}")
         
-        # 1. Configurar interfaces minimalistas para deixar o NetworkManager assumir
         with open(f"{self.mount}/etc/network/interfaces", "w") as f:
             f.write("auto lo\niface lo inet loopback\n")
             
-        # 2. Copiar conexões existentes (Wi-Fi, etc) do sistema Live para o instalado
         nm_src = "/etc/NetworkManager/system-connections"
         nm_dest = f"{self.mount}/etc/NetworkManager/system-connections"
         if os.path.exists(nm_src) and os.path.isdir(nm_src):
@@ -305,7 +305,6 @@ class Installer:
                     d = os.path.join(nm_dest, item)
                     if os.path.isfile(s):
                         shutil.copy2(s, d)
-                        # Permissões restritas são cruciais para arquivos com senhas
                         os.chmod(d, 0o600)
                 print(" -> Copied NetworkManager connections.")
             except Exception as e:
@@ -343,7 +342,6 @@ dpkg-reconfigure -f noninteractive keyboard-configuration
 
 ln -sf /usr/share/zoneinfo/{self.conf["timezone"]} /etc/localtime
 
-# Habilitar NetworkManager para iniciar no boot
 systemctl enable NetworkManager
 
 {luks_sh}
