@@ -254,7 +254,6 @@ class Installer:
         for m in ["/dev", "/dev/pts", "/proc", "/sys"]:
             Sys.run(f"mount --bind {m} {self.mount}{m}")
         shutil.copy("/etc/resolv.conf", f"{self.mount}/etc/resolv.conf")
-
         
         print(f"{Colors.G}Copying NextFerretOS specific files...{Colors.R}")
         custom_files = [
@@ -271,11 +270,23 @@ class Installer:
                     shutil.copy2(src, dest_abs)
                     if make_exec:
                         os.chmod(dest_abs, 0o755)
-                    print(f" -> Copied: {src}")
+                    print(f" -> Copied file: {src}")
                 except Exception as e:
                     print(f" -> Failed to copy {src}: {e}")
             else:
-                print(f" -> Warning: Source file not found: {src}")
+                print(f" -> Warning: File not found: {src}")
+
+        plymouth_src = "/usr/share/plymouth/themes/blockchain"
+        plymouth_dest = os.path.join(self.mount, "usr/share/plymouth/themes/blockchain")
+        if os.path.exists(plymouth_src):
+            try:
+                os.makedirs(os.path.dirname(plymouth_dest), exist_ok=True)
+                shutil.copytree(plymouth_src, plymouth_dest, dirs_exist_ok=True)
+                print(f" -> Copied Plymouth theme: blockchain")
+            except Exception as e:
+                print(f" -> Failed to copy Plymouth theme: {e}")
+        else:
+            print(f" -> Warning: Plymouth theme 'blockchain' not found in live system.")
       
         u_root = Sys.get_uuid(root_dev)
         u_efi = Sys.get_uuid(p1)
@@ -290,6 +301,7 @@ class Installer:
             luks_sh = f"echo '{self.mapper} UUID={u_p2} none luks,discard,initramfs' > /etc/crypttab\napt-get install -y cryptsetup-initramfs\n"
         de_sh = f"apt-get install -y {self.conf['de_pkgs']}\n" if self.conf["de_pkgs"] else ""
 
+        # Using double quotes in sed to interpolate the python variable
         script = f"""#!/bin/bash
 set -e
 export DEBIAN_FRONTEND=noninteractive
@@ -298,12 +310,15 @@ echo "deb http://deb.debian.org/debian trixie main contrib non-free non-free-fir
 echo "deb http://security.debian.org/debian-security trixie-security main contrib non-free" >> /etc/apt/sources.list
 apt-get update
 
-apt-get install -y --no-install-recommends linux-image-amd64 sudo network-manager firmware-linux grub-efi-amd64-signed shim-signed locales keyboard-configuration console-setup ca-certificates
+apt-get install -y --no-install-recommends linux-image-amd64 sudo network-manager firmware-linux grub-efi-amd64-signed shim-signed locales keyboard-configuration console-setup ca-certificates plymouth plymouth-themes
 
-sed -i 's/^# *\\(.*UTF-8\\)/\\1/' /etc/locale.gen || true
+sed -i "s/^# *{self.sys_locale}/{self.sys_locale}/" /etc/locale.gen || true
 locale-gen || true
 echo "LANG={self.sys_locale}" > /etc/default/locale
+
 echo 'XKBLAYOUT="{self.conf["keymap"]}"' > /etc/default/keyboard
+dpkg-reconfigure -f noninteractive keyboard-configuration
+
 ln -sf /usr/share/zoneinfo/{self.conf["timezone"]} /etc/localtime
 
 {luks_sh}
@@ -315,6 +330,11 @@ echo "root:{self.conf['pass']}" | chpasswd
 echo "{self.conf['hostname']}" > /etc/hostname
 
 {de_sh}
+
+if [ -d "/usr/share/plymouth/themes/blockchain" ]; then
+    echo "Setting Plymouth theme to blockchain..."
+    plymouth-set-default-theme blockchain || true
+fi
 
 update-initramfs -c -k all || update-initramfs -u
 grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=NextFerretOS || true
