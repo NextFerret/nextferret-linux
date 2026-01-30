@@ -1,0 +1,8 @@
+PRETTY_NAME="NextFerretOS GNU/Linux"
+NAME="NextFerretOS"
+VERSION_ID="1"
+VERSION="1 (The Agile Ferret)"
+ID=nextferretos
+ID_LIKE=debian
+NEXTFERRET_WARRANTY_EOL="January 2036"
+LOGO=/usr/share/icons/hicolor/4000x4000/distributor-logo.png
