@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=NextFerret Updater
+Comment=Update NextFerretOS
+Exec=pkexec /usr/bin/nextferret-updater
+Icon=/usr/share/icons/hicolor/4000x4000/distributor-logo.png
+Terminal=true
+Categories=Utility;
+
+
