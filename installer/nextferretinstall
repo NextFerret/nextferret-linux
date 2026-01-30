@@ -287,6 +287,29 @@ class Installer:
                 print(f" -> Failed to copy Plymouth theme: {e}")
         else:
             print(f" -> Warning: Plymouth theme 'blockchain' not found in live system.")
+            
+        print(f"{Colors.G}Configuring Network...{Colors.R}")
+        
+        # 1. Configurar interfaces minimalistas para deixar o NetworkManager assumir
+        with open(f"{self.mount}/etc/network/interfaces", "w") as f:
+            f.write("auto lo\niface lo inet loopback\n")
+            
+        # 2. Copiar conexões existentes (Wi-Fi, etc) do sistema Live para o instalado
+        nm_src = "/etc/NetworkManager/system-connections"
+        nm_dest = f"{self.mount}/etc/NetworkManager/system-connections"
+        if os.path.exists(nm_src) and os.path.isdir(nm_src):
+            try:
+                os.makedirs(nm_dest, exist_ok=True)
+                for item in os.listdir(nm_src):
+                    s = os.path.join(nm_src, item)
+                    d = os.path.join(nm_dest, item)
+                    if os.path.isfile(s):
+                        shutil.copy2(s, d)
+                        # Permissões restritas são cruciais para arquivos com senhas
+                        os.chmod(d, 0o600)
+                print(" -> Copied NetworkManager connections.")
+            except Exception as e:
+                print(f" -> Error copying network connections: {e}")
       
         u_root = Sys.get_uuid(root_dev)
         u_efi = Sys.get_uuid(p1)
@@ -301,7 +324,6 @@ class Installer:
             luks_sh = f"echo '{self.mapper} UUID={u_p2} none luks,discard,initramfs' > /etc/crypttab\napt-get install -y cryptsetup-initramfs\n"
         de_sh = f"apt-get install -y {self.conf['de_pkgs']}\n" if self.conf["de_pkgs"] else ""
 
-        # Using double quotes in sed to interpolate the python variable
         script = f"""#!/bin/bash
 set -e
 export DEBIAN_FRONTEND=noninteractive
@@ -320,6 +342,9 @@ echo 'XKBLAYOUT="{self.conf["keymap"]}"' > /etc/default/keyboard
 dpkg-reconfigure -f noninteractive keyboard-configuration
 
 ln -sf /usr/share/zoneinfo/{self.conf["timezone"]} /etc/localtime
+
+# Habilitar NetworkManager para iniciar no boot
+systemctl enable NetworkManager
 
 {luks_sh}
 
