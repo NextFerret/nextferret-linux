@@ -12,4 +12,21 @@ echo "[+] Switching repositories from trixie to forky..."
 sed -i 's/trixie/forky/g' /etc/apt/sources.list
 
 echo "[+] Updating package lists..."
-# do no update nextferretOS by apt,use this tool!
+apt update
+
+echo "[+] Upgrading packages..."
+apt upgrade -y
+
+echo "[+] Downloading os-release..."
+wget -O /etc/os-release https://nextferret.github.io/etc/os-release
+
+echo "[+] Removing old nextferret-updater..."
+rm -f /usr/bin/nextferret-updater
+
+echo "[+] Downloading new nextferret-updater..."
+wget -O /usr/bin/nextferret-updater https://nextferret.github.io/nextferret-updater
+
+echo "[+] Setting executable permissions..."
+chmod +x /usr/bin/nextferret-updater
+
+echo "[✓] Done."
