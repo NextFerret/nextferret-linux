@@ -1,0 +1,355 @@
+#!/usr/bin/env python3
+import os
+import sys
+import subprocess
+import json
+import shutil
+import time
+import getpass
+
+TEXT = {
+    "en": {
+        "header": "NextFerretOS 1  (The Agile Ferret) Installer",
+        "sel_lang": "Select Installer Language",
+        "menu_host": "Set Hostname",
+        "menu_disk": "Select Disk",
+        "menu_user": "Set User & Password",
+        "menu_locale": "System Language (Locale)",
+        "menu_keymap": "Keyboard Layout",
+        "menu_timezone": "Timezone",
+        "menu_de": "Select Desktop Environment",
+        "menu_luks": "Disk Encryption (LUKS)",
+        "menu_install": "Start Installation",
+        "menu_exit": "Exit",
+        "ask_host": "Enter Hostname: ",
+        "ask_user": "Username: ",
+        "ask_pass": "Password: ",
+        "ask_pass_conf": "Confirm Password: ",
+        "err_pass": "Passwords do not match.",
+        "ask_luks": "Enable LUKS Encryption? (y/n): ",
+        "ask_luks_pass": "LUKS Password: ",
+        "ask_locale": "Enter system locale: ",
+        "ask_timezone": "Enter Timezone: ",
+        "warn_wipe": "WARNING: ALL DATA ON {} WILL BE DESTROYED!",
+        "confirm": "Type 'yes' to continue: ",
+        "step_part": "Partitioning Disk...",
+        "step_fmt": "Formatting Partitions...",
+        "step_copy": "Copying System Files...",
+        "step_de": "Installing Desktop Environment...",
+        "step_cfg": "Configuring System...",
+        "done": "Installation Complete!",
+        "uefi_warn": "IMPORTANT: You MUST manually add the boot entry in your BIOS/UEFI!\nPath: \\EFI\\NextFerretOS\\grubx64.efi",
+        "err_root": "Error: Must run as root.",
+        "err_tool": "Error: Missing tool: {}",
+        "summary": "Configuration Summary",
+        "status_none": "None",
+        "de_none": "None (CLI Only)",
+        "key_us": "US (American)",
+        "key_br": "BR (ABNT2)",
+        "key_pt": "PT (Portugal)",
+        "key_custom": "Custom"
+    },
+    "pt": {
+        "header": "Instalador NextFerretOS 1 (The Agile Ferret)",
+        "sel_lang": "Selecione o Idioma do Instalador",
+        "menu_host": "Definir Hostname",
+        "menu_disk": "Selecionar Disco",
+        "menu_user": "Definir Usuário e Senha",
+        "menu_locale": "Idioma do Sistema (Locale)",
+        "menu_keymap": "Layout do Teclado",
+        "menu_timezone": "Fuso Horário (Timezone)",
+        "menu_de": "Interface Gráfica (Desktop)",
+        "menu_luks": "Criptografia de Disco (LUKS)",
+        "menu_install": "Iniciar Instalação",
+        "menu_exit": "Sair",
+        "ask_host": "Digite o Hostname: ",
+        "ask_user": "Usuário: ",
+        "ask_pass": "Senha: ",
+        "ask_pass_conf": "Confirme a Senha: ",
+        "err_pass": "Senhas não coincidem.",
+        "ask_luks": "Habilitar Criptografia LUKS? (s/n): ",
+        "ask_luks_pass": "Senha LUKS: ",
+        "ask_locale": "Digite o locale: ",
+        "ask_timezone": "Digite o Fuso Horário: ",
+        "warn_wipe": "AVISO: TODOS OS DADOS EM {} SERÃO DESTRUÍDOS!",
+        "confirm": "Digite 'sim' para continuar: ",
+        "step_part": "Particionando Disco...",
+        "step_fmt": "Formatando Partições...",
+        "step_copy": "Copiando Arquivos do Sistema...",
+        "step_de": "Instalando Interface Gráfica...",
+        "step_cfg": "Configurando Sistema...",
+        "done": "Instalação Concluída!",
+        "uefi_warn": "IMPORTANTE: Você PRECISA adicionar a entrada de boot manualmente na BIOS/UEFI!\nCaminho: \\EFI\\NextFerretOS\\grubx64.efi",
+        "err_root": "Erro: Execute como root.",
+        "err_tool": "Erro: Ferramenta faltando: {}",
+        "summary": "Resumo da Configuração",
+        "status_none": "Nenhum",
+        "de_none": "Nenhuma (Apenas CLI)",
+        "key_us": "US (Americano)",
+        "key_br": "BR (ABNT2)",
+        "key_pt": "PT (Portugal)",
+        "key_custom": "Outro"
+    }
+}
+
+class Colors:
+    H, B, G, W, F, R = '\033[95m', '\033[94m', '\033[92m', '\033[93m', '\033[91m', '\033[0m'
+
+class Sys:
+    @staticmethod
+    def run(cmd, input_text=None, check=True):
+        try:
+            r = subprocess.run(cmd, shell=True, check=check, text=True, input=input_text, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            return r.stdout.strip()
+        except subprocess.CalledProcessError as e:
+            return None
+        except Exception:
+            return None
+
+    @staticmethod
+    def list_disks():
+        o = Sys.run("lsblk -d -n -o NAME,SIZE,MODEL,TYPE -J", check=False)
+        if o:
+            try: return [d for d in json.loads(o)['blockdevices'] if d['type'] == 'disk']
+            except: return []
+        return []
+
+    @staticmethod
+    def get_uuid(dev):
+        return Sys.run(f"blkid -s UUID -o value {dev}")
+
+class Installer:
+    def __init__(self):
+        self.ui_lang, self.sys_locale = "en", "en_US.UTF-8"
+        self.conf = {"hostname": "nextferret", "disk": None, "user": "ferret", "pass": None, "luks": False, "luks_pass": None, "keymap": "us", "timezone": "UTC", "de_name": "None", "de_pkgs": ""}
+        self.mount, self.mapper = "/mnt/nextferret", "cryptferret"
+
+    def t(self, key): return TEXT[self.ui_lang].get(key, key)
+    def clear(self): os.system('clear')
+
+    def check_reqs(self):
+        if os.geteuid() != 0: print(self.t("err_root")); sys.exit(1)
+        for t in ["debootstrap", "mkfs.btrfs", "parted", "cryptsetup", "wipefs", "mkfs.vfat"]:
+            if not shutil.which(t): print(self.t("err_tool").format(t)); sys.exit(1)
+
+    def select_ui_language(self):
+        self.clear()
+        print(f"{Colors.H}1. English\n2. Português (Brasil){Colors.R}")
+        if input("> ") == "2":
+            self.ui_lang, self.sys_locale = "pt", "pt_BR.UTF-8"
+            self.conf["keymap"], self.conf["timezone"] = "br", "America/Sao_Paulo"
+
+    def show_summary(self):
+        print(f"\n{Colors.B}--- {self.t('summary')} ---{Colors.R}")
+        for k, v in [("Hostname", self.conf['hostname']), ("Locale", self.sys_locale), ("Timezone", self.conf['timezone']), ("Keyboard", self.conf['keymap']), ("Disk", self.conf['disk'] or self.t('status_none')), ("Desktop Env", self.conf['de_name']), ("User", self.conf['user']), ("LUKS", self.conf['luks'])]:
+            print(f"{k:<20}: {Colors.G}{v}{Colors.R}")
+        print("-" * 40)
+
+    def menu(self):
+        while True:
+            self.clear()
+            os.system('cat /etc/motd 2>/dev/null')
+            print(f"{Colors.H}{self.t('header')}{Colors.R}")
+            self.show_summary()
+            opts = [(self.t("menu_host"), self.set_host), (self.t("menu_locale"), self.set_locale), (self.t("menu_timezone"), self.set_timezone), (self.t("menu_keymap"), self.set_keyboard), (self.t("menu_disk"), self.set_disk), (self.t("menu_de"), self.set_de), (self.t("menu_user"), self.set_user), (self.t("menu_luks"), self.set_luks), (self.t("menu_install"), self.run_install), (self.t("menu_exit"), sys.exit)]
+            for i, (txt, _) in enumerate(opts): print(f"{i+1}. {txt}")
+            try:
+                raw_input = input("\n> ")
+                if not raw_input: continue
+                c = int(raw_input) - 1
+                if 0 <= c < len(opts):
+                    opts[c][1]()
+            except ValueError:
+                pass
+
+    def set_host(self): h = input(self.t("ask_host")); self.conf["hostname"] = h or self.conf["hostname"]
+    def set_locale(self): l = input(self.t("ask_locale")); self.sys_locale = l or self.sys_locale
+    def set_timezone(self): t = input(self.t("ask_timezone")); self.conf["timezone"] = t or self.conf["timezone"]
+    def set_keyboard(self): k = input("Keymap (us, br, pt): "); self.conf["keymap"] = k or self.conf["keymap"]
+
+    def set_de(self):
+        des = [(self.t("de_none"), ""), ("XFCE", "xfce4 xfce4-goodies lightdm"), ("GNOME", "gnome-core gdm3"), ("KDE", "kde-standard sddm")]
+        for i, (n, _) in enumerate(des): print(f"{i+1}. {n}")
+        try:
+            c = int(input("> ")) - 1
+            self.conf["de_name"], self.conf["de_pkgs"] = des[c][0], des[c][1]
+        except: pass
+
+    def set_disk(self):
+        disks = Sys.list_disks()
+        for i, d in enumerate(disks): print(f"{i}. /dev/{d['name']} ({d['size']})")
+        try: c = int(input("> ")); self.conf["disk"] = f"/dev/{disks[c]['name']}"
+        except: pass
+
+    def set_user(self):
+        self.conf["user"] = input(self.t("ask_user"))
+        while True:
+            p1, p2 = getpass.getpass(self.t("ask_pass")), getpass.getpass(self.t("ask_pass_conf"))
+            if p1 == p2 and p1: self.conf["pass"] = p1; break
+            print(self.t("err_pass"))
+
+    def set_luks(self):
+        if input(self.t("ask_luks")).lower().startswith(('y', 's')):
+            self.conf["luks"] = True
+            while True:
+                p1, p2 = getpass.getpass(self.t("ask_luks_pass")), getpass.getpass(self.t("ask_pass_conf"))
+                if p1 == p2 and p1: self.conf["luks_pass"] = p1; break
+        else: self.conf["luks"] = False
+
+    def run_install(self):
+        if not self.conf["disk"] or not self.conf["pass"]:
+            print("Disk and password must be set."); return
+
+        confirm_word = "sim" if self.ui_lang == "pt" else "yes"
+        if input(f"{self.t('warn_wipe').format(self.conf['disk'])}\n{self.t('confirm')}").lower() != confirm_word:
+            return
+
+        d = self.conf["disk"]
+        print(self.t("step_part"))
+        Sys.run(f"wipefs -a {d}")
+        Sys.run(f"parted -s {d} mklabel gpt")
+        Sys.run(f"parted -s {d} mkpart ESP fat32 1MiB 513MiB")
+        Sys.run(f"parted -s {d} set 1 esp on")
+        Sys.run(f"parted -s {d} mkpart primary 513MiB 100%")
+
+        sep = "p" if "nvme" in d else ""
+        p1, p2 = f"{d}{sep}1", f"{d}{sep}2"
+        root_dev = p2
+
+        if self.conf["luks"]:
+            print("Setting up LUKS...")
+            Sys.run(f"cryptsetup luksFormat --type luks2 {p2} -", input_text=self.conf["luks_pass"])
+            Sys.run(f"cryptsetup open {p2} {self.mapper} -", input_text=self.conf["luks_pass"])
+            root_dev = f"/dev/mapper/{self.mapper}"
+
+        print(self.t("step_fmt"))
+        Sys.run(f"mkfs.vfat -F32 {p1}")
+        Sys.run(f"mkfs.btrfs -f -L NextRoot {root_dev}")
+
+        tmp = "/mnt/tmp_install"
+        os.makedirs(tmp, exist_ok=True)
+        Sys.run(f"mount {root_dev} {tmp}")
+        Sys.run(f"btrfs sub create {tmp}/@")
+        Sys.run(f"btrfs sub create {tmp}/@home")
+        Sys.run(f"umount {tmp}")
+
+        os.makedirs(self.mount, exist_ok=True)
+        mnt_opts = "defaults,compress=zstd:1,noatime"
+        Sys.run(f"mount -o {mnt_opts},subvol=@ {root_dev} {self.mount}")
+        for p in ["home", "boot/efi"]: os.makedirs(f"{self.mount}/{p}", exist_ok=True)
+        Sys.run(f"mount -o {mnt_opts},subvol=@home {root_dev} {self.mount}/home")
+        Sys.run(f"mount {p1} {self.mount}/boot/efi")
+
+        print(self.t("step_copy"))
+        debootstrap_cmd = f"debootstrap --arch=amd64 trixie {self.mount} http://deb.debian.org/debian"
+        r = Sys.run(debootstrap_cmd)
+        if r is None:
+            print("debootstrap failed. Check network and that debootstrap is installed."); 
+            try: Sys.run(f"umount -R {self.mount}")
+            except: pass
+            if self.conf["luks"]:
+                Sys.run(f"cryptsetup close {self.mapper}")
+            sys.exit(1)
+
+        for m in ["/dev", "/dev/pts", "/proc", "/sys"]:
+            Sys.run(f"mount --bind {m} {self.mount}{m}")
+        shutil.copy("/etc/resolv.conf", f"{self.mount}/etc/resolv.conf")
+
+        
+        print(f"{Colors.G}Copying NextFerretOS specific files...{Colors.R}")
+        custom_files = [
+            ("/etc/os-release", "etc/os-release", False),
+            ("/usr/bin/nextferret-updater", "usr/bin/nextferret-updater", True),
+            ("/usr/share/applications/updater.desktop", "usr/share/applications/updater.desktop", False)
+        ]
+
+        for src, dest_rel, make_exec in custom_files:
+            dest_abs = os.path.join(self.mount, dest_rel)
+            if os.path.exists(src):
+                try:
+                    os.makedirs(os.path.dirname(dest_abs), exist_ok=True)
+                    shutil.copy2(src, dest_abs)
+                    if make_exec:
+                        os.chmod(dest_abs, 0o755)
+                    print(f" -> Copied: {src}")
+                except Exception as e:
+                    print(f" -> Failed to copy {src}: {e}")
+            else:
+                print(f" -> Warning: Source file not found: {src}")
+      
+        u_root = Sys.get_uuid(root_dev)
+        u_efi = Sys.get_uuid(p1)
+        with open(f"{self.mount}/etc/fstab", "w") as f:
+            f.write(f"UUID={u_root} / btrfs defaults,subvol=@,compress=zstd,noatime 0 0\n")
+            f.write(f"UUID={u_root} /home btrfs defaults,subvol=@home,compress=zstd,noatime 0 0\n")
+            f.write(f"UUID={u_efi} /boot/efi vfat umask=0077 0 2\n")
+
+        u_p2 = Sys.get_uuid(p2) if self.conf["luks"] else ""
+        luks_sh = ""
+        if self.conf["luks"] and u_p2:
+            luks_sh = f"echo '{self.mapper} UUID={u_p2} none luks,discard,initramfs' > /etc/crypttab\napt-get install -y cryptsetup-initramfs\n"
+        de_sh = f"apt-get install -y {self.conf['de_pkgs']}\n" if self.conf["de_pkgs"] else ""
+
+        script = f"""#!/bin/bash
+set -e
+export DEBIAN_FRONTEND=noninteractive
+
+echo "deb http://deb.debian.org/debian trixie main contrib non-free non-free-firmware" > /etc/apt/sources.list
+echo "deb http://security.debian.org/debian-security trixie-security main contrib non-free" >> /etc/apt/sources.list
+apt-get update
+
+apt-get install -y --no-install-recommends linux-image-amd64 sudo network-manager firmware-linux grub-efi-amd64-signed shim-signed locales keyboard-configuration console-setup ca-certificates
+
+sed -i 's/^# *\\(.*UTF-8\\)/\\1/' /etc/locale.gen || true
+locale-gen || true
+echo "LANG={self.sys_locale}" > /etc/default/locale
+echo 'XKBLAYOUT="{self.conf["keymap"]}"' > /etc/default/keyboard
+ln -sf /usr/share/zoneinfo/{self.conf["timezone"]} /etc/localtime
+
+{luks_sh}
+
+userdel -r live 2>/dev/null || true
+useradd -m -s /bin/bash -G sudo {self.conf['user']}
+echo "{self.conf['user']}:{self.conf['pass']}" | chpasswd
+echo "root:{self.conf['pass']}" | chpasswd
+echo "{self.conf['hostname']}" > /etc/hostname
+
+{de_sh}
+
+update-initramfs -c -k all || update-initramfs -u
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=NextFerretOS || true
+update-grub || true
+
+apt-get clean
+exit 0
+"""
+
+        chroot_script_path = os.path.join(self.mount, "s.sh")
+        with open(chroot_script_path, "w") as f:
+            f.write(script)
+        Sys.run(f"chmod +x {chroot_script_path}")
+        subprocess.run(f"chroot {self.mount} /s.sh", shell=True)
+
+        for m in ["/dev/pts", "/dev", "/proc", "/sys"]:
+            try: Sys.run(f"umount {self.mount}{m}")
+            except: pass
+
+        try:
+            Sys.run(f"umount -R {self.mount}")
+        except:
+            Sys.run(f"umount -l {self.mount}")
+
+        if self.conf["luks"]:
+            Sys.run(f"cryptsetup close {self.mapper}")
+
+        print(f"\n{Colors.G}{self.t('done')}{Colors.R}")
+        print(f"\n{Colors.W}##################################################")
+        print(self.t("uefi_warn"))
+        print(f"##################################################{Colors.R}\n")
+        sys.exit(0)
+
+if __name__ == "__main__":
+    a = Installer()
+    a.check_reqs()
+    a.select_ui_language()
+    a.menu()
