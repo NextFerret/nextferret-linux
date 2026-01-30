@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [ "$EUID" -ne 0 ]; then
+  echo "Error: this script must be run as root."
+  echo "Please run it with sudo or as root."
+  exit 1
+fi
+
+set -e
+
+echo "[+] Switching repositories from trixie to forky..."
+sed -i 's/trixie/forky/g' /etc/apt/sources.list
+
+echo "[+] Updating package lists..."
+# do no update nextferretOS by apt,use this tool!
