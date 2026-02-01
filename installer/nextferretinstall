@@ -260,6 +260,7 @@ class Installer:
         custom_files = [
             ("/etc/os-release", "etc/os-release", False),
             ("/etc/debian_version", "etc/debian_version", False),
+            ("/etc/apt/preferences.d/nextferret", "etc/apt/preferences.d/nextferret", False),
             ("/usr/bin/nextferret-updater", "usr/bin/nextferret-updater", True),
             ("/usr/share/applications/updater.desktop", "usr/share/applications/updater.desktop", False),
             ("/usr/share/icons/hicolor/4000x4000/distributor-logo.png", "usr/share/icons/hicolor/4000x4000/distributor-logo.png", False),
@@ -332,23 +333,12 @@ echo "deb http://deb.debian.org/debian trixie main contrib non-free non-free-fir
 echo "deb http://security.debian.org/debian-security trixie-security main contrib non-free" >> /etc/apt/sources.list
 apt-get update
 
-# --- PROTECAO DO DEBIAN_VERSION ---
-# O arquivo /etc/debian_version customizado ja foi copiado pelo Python.
-# Mas precisamos dizer ao dpkg para nao sobrescreve-lo quando atualizar o base-files.
 if [ -f /etc/debian_version ]; then
-    # 1. Backupeia o nosso arquivo customizado
     cp /etc/debian_version /etc/debian_version.custom_bak
-    
-    # 2. Cria o desvio (isso vai mover o arquivo 'atual' para .distrib no registro do dpkg)
-    # Como o arquivo atual eh o nosso, ele sera movido para .distrib agora.
     dpkg-divert --add --package nextferret-core --rename --divert /etc/debian_version.distrib /etc/debian_version
-    
-    # 3. Restaura o nosso arquivo para o lugar original
     mv /etc/debian_version.custom_bak /etc/debian_version
-    
     echo " -> Protecao do /etc/debian_version ativada."
 fi
-# ----------------------------------
 
 apt-get install -y --no-install-recommends linux-image-amd64 sudo network-manager firmware-linux grub-efi-amd64-signed shim-signed locales keyboard-configuration console-setup ca-certificates plymouth plymouth-themes
 
