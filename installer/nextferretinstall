@@ -9,7 +9,7 @@ import getpass
 
 TEXT = {
     "en": {
-        "header": "NextFerretOS 1  (The Agile Ferret) Installer",
+        "header": "NextFerretOS 1.1  (Ferret War Dance) Installer",
         "sel_lang": "Select Installer Language",
         "menu_host": "Set Hostname",
         "menu_disk": "Select Disk",
@@ -50,7 +50,7 @@ TEXT = {
         "key_custom": "Custom"
     },
     "pt": {
-        "header": "Instalador NextFerretOS 1 (The Agile Ferret)",
+        "header": "Instalador NextFerretOS 1.1 (Dança de Guerra do Furão)",
         "sel_lang": "Selecione o Idioma do Instalador",
         "menu_host": "Definir Hostname",
         "menu_disk": "Selecionar Disco",
@@ -256,12 +256,14 @@ class Installer:
         shutil.copy("/etc/resolv.conf", f"{self.mount}/etc/resolv.conf")
         
         print(f"{Colors.G}Copying NextFerretOS specific files...{Colors.R}")
+        
         custom_files = [
             ("/etc/os-release", "etc/os-release", False),
+            ("/etc/debian_version", "etc/debian_version", False),
             ("/usr/bin/nextferret-updater", "usr/bin/nextferret-updater", True),
             ("/usr/share/applications/updater.desktop", "usr/share/applications/updater.desktop", False),
-            # Nova entrada solicitada
-            ("/home/seyu/nextferretos/usr/share/icons/hicolor/4000x4000/distributor-logo.png", "usr/share/icons/hicolor/4000x4000/distributor-logo.png", False)
+            ("/usr/share/icons/hicolor/4000x4000/distributor-logo.png", "usr/share/icons/hicolor/4000x4000/distributor-logo.png", False),
+            ("/etc/plymouth/plymouthd.conf", "etc/plymouth/plymouthd.conf", False)
         ]
 
         for src, dest_rel, make_exec in custom_files:
@@ -291,7 +293,6 @@ class Installer:
             print(f" -> Warning: Plymouth theme 'blockchain' not found in live system.")
             
         print(f"{Colors.G}Configuring Network...{Colors.R}")
-        
         with open(f"{self.mount}/etc/network/interfaces", "w") as f:
             f.write("auto lo\niface lo inet loopback\n")
             
@@ -309,7 +310,7 @@ class Installer:
                 print(" -> Copied NetworkManager connections.")
             except Exception as e:
                 print(f" -> Error copying network connections: {e}")
-      
+       
         u_root = Sys.get_uuid(root_dev)
         u_efi = Sys.get_uuid(p1)
         with open(f"{self.mount}/etc/fstab", "w") as f:
@@ -330,6 +331,24 @@ export DEBIAN_FRONTEND=noninteractive
 echo "deb http://deb.debian.org/debian trixie main contrib non-free non-free-firmware" > /etc/apt/sources.list
 echo "deb http://security.debian.org/debian-security trixie-security main contrib non-free" >> /etc/apt/sources.list
 apt-get update
+
+# --- PROTECAO DO DEBIAN_VERSION ---
+# O arquivo /etc/debian_version customizado ja foi copiado pelo Python.
+# Mas precisamos dizer ao dpkg para nao sobrescreve-lo quando atualizar o base-files.
+if [ -f /etc/debian_version ]; then
+    # 1. Backupeia o nosso arquivo customizado
+    cp /etc/debian_version /etc/debian_version.custom_bak
+    
+    # 2. Cria o desvio (isso vai mover o arquivo 'atual' para .distrib no registro do dpkg)
+    # Como o arquivo atual eh o nosso, ele sera movido para .distrib agora.
+    dpkg-divert --add --package nextferret-core --rename --divert /etc/debian_version.distrib /etc/debian_version
+    
+    # 3. Restaura o nosso arquivo para o lugar original
+    mv /etc/debian_version.custom_bak /etc/debian_version
+    
+    echo " -> Protecao do /etc/debian_version ativada."
+fi
+# ----------------------------------
 
 apt-get install -y --no-install-recommends linux-image-amd64 sudo network-manager firmware-linux grub-efi-amd64-signed shim-signed locales keyboard-configuration console-setup ca-certificates plymouth plymouth-themes
 
