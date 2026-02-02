@@ -12,6 +12,12 @@ The system is designed to give you full control over your operating system. You 
 By refusing Flatpaks,Snaps,conatiners and ostree the OS stays clean, predictable, and performant, while still allowing deep customization. Whether you want a minimal workstation, a gaming-ready desktop, or a fully customized development environment, NextFerretOS adapts to you — not the other way around.
 
 ---
+# Minimum Requirements
+---
+a processor with 1 or 2 cores that haves 1 GHz
+512MB or 2 GB of RAM
+---
+---
 # Screenshots
 ---
 # XFCE 
