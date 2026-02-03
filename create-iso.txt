@@ -1,11 +1,9 @@
-
 mkdir -p /tmp/rootfs_staging /tmp/iso_build/live /tmp/iso_build/boot/grub
 
-rsync -aAXv / /tmp/rootfs_staging/ --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/NextFerretOS.iso}
+rsync -aAXv / /tmp/rootfs_staging/ --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/NextFerretOS*.iso}
 
 mkdir -p /tmp/rootfs_staging/{dev,proc,sys,tmp,run,mnt,media}
 chmod 1777 /tmp/rootfs_staging/tmp
-
 
 mksquashfs /tmp/rootfs_staging /tmp/iso_build/live/filesystem.squashfs -comp xz -noappend
 
@@ -16,11 +14,10 @@ cat <<EOF > /tmp/iso_build/boot/grub/grub.cfg
 set default=0
 set timeout=5
 
-menuentry "NextFerretOS 1.1 (Ferret War Dance)" {
+menuentry "NextFerretOS 1.2 (Savage Ferret)" {
     linux /live/vmlinuz boot=live quiet splash
     initrd /live/initrd.img
 }
 EOF
 
-# 7. Gera a ISO final
-grub-mkrescue -o /NextFerretOS_v1.1.iso /tmp/iso_build
+grub-mkrescue -o /NextFerretOS_v1.2_Savage.iso /tmp/iso_build
