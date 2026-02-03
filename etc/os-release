@@ -1,11 +1,13 @@
-PRETTY_NAME="NextFerretOS GNU/Linux 1.1"
+PRETTY_NAME="NextFerretOS GNU/Linux 1.2 (Savage Ferret) BETA STS"
 NAME="NextFerretOS GNU/Linux"
-VERSION_ID="1.1"
-VERSION="1.1 (Ferret War Dance)"
+VERSION_ID="1.2"
+VERSION="1.2 (Savage Ferret)"
 ID=nextferretos
 ID_LIKE=debian
-NEXTFERRET_WARRANTY_EOL="January 2036"
+NEXTFERRET_WARRANTY_EOL="February 2028"
 LOGO=/usr/share/icons/hicolor/4000x4000/distributor-logo.png
-NEXTFERRET_SUPPORT_PRODUCT="NextFerretOS 1.1 GNU/Linux,Based on Debian 13 Trixie/Stable,NextFerretOS is made by NextFerretOS and published with GPLv3"
-NEXTFERRET_BUILD_DATE:31/01/2026
-NEXTFERRET_SUPPORT_PRODUCT_ID="nextferretos1.1basedondebian13bythenameofferretsdontclosethisdistro(C)nextferret,2026"
+NEXTFERRET_SUPPORT_PRODUCT="NextFerretOS 1.2 GNU/Linux,Based on Debian 13 Trixie/Stable,NextFerretOS is made by NextFerretOS and published with GPLv3"
+NEXTFERRET_BUILD_DATE:3/02/2026
+NEXTFERRET_SUPPORT_PRODUCT_ID="nextferretos1.2basedondebian13bythenameofferretsdontclosethisdistro(C)nextferret,2026"
+NEXTFERRET_IS_LTS=0
+NEXTFERRET_IS_STS=1
