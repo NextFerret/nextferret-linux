@@ -19,18 +19,19 @@ a processor with 1 or 2 cores that haves 1 GHz
 ---
 # Screenshots
 
-# XFCE 
-
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/ab42745d-28f4-4317-9ba4-6fc3ba8dba6f" />
+- XFCE: 
 
 
-# GNOME
+<img width="1920" height="720" alt="image" src="https://github.com/user-attachments/assets/ab42745d-28f4-4317-9ba4-6fc3ba8dba6f" />
+
+- GNOME:
 
 
-<img width="1920" height="1080" alt="Captura de tela de 2026-02-02 11-57-19" src="https://github.com/user-attachments/assets/fdc5a08c-e7b3-4ed6-a610-453d2298b28a" />
+
+<img width="1920" height="720" alt="Captura de tela de 2026-02-02 11-57-19" src="https://github.com/user-attachments/assets/fdc5a08c-e7b3-4ed6-a610-453d2298b28a" />
 
 
-<img width="1920" height="1080" alt="Captura de tela de 2026-02-02 11-57-42" src="https://github.com/user-attachments/assets/da429d77-a3c6-4772-a563-ca55a0065f6c" />
+<img width="1920" height="720" alt="Captura de tela de 2026-02-02 11-57-42" src="https://github.com/user-attachments/assets/da429d77-a3c6-4772-a563-ca55a0065f6c" />
 
 ---
 
