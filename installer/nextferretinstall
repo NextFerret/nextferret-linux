@@ -9,7 +9,7 @@ import getpass
 
 TEXT = {
     "en": {
-        "header": "NextFerretOS 1.1  (Ferret War Dance) Installer",
+        "header": "NextFerretOS 1.3 (Quantum Ferret) BETA STS Installer",
         "sel_lang": "Select Installer Language",
         "menu_host": "Set Hostname",
         "menu_disk": "Select Disk",
@@ -38,7 +38,7 @@ TEXT = {
         "step_de": "Installing Desktop Environment...",
         "step_cfg": "Configuring System...",
         "done": "Installation Complete!",
-        "uefi_warn": "IMPORTANT: You MUST manually add the boot entry in your BIOS/UEFI!\nPath: \\EFI\\NextFerretOS\\grubx64.efi",
+        "uefi_warn": "IMPORTANT: You MUST manually add the boot entry in your BIOS/UEFI If you use a UEFI system. \nPath: \\EFI\\NextFerretOS\\grubx64.efi",
         "err_root": "Error: Must run as root.",
         "err_tool": "Error: Missing tool: {}",
         "summary": "Configuration Summary",
@@ -50,7 +50,7 @@ TEXT = {
         "key_custom": "Custom"
     },
     "pt": {
-        "header": "Instalador NextFerretOS 1.1 (Dança de Guerra do Furão)",
+        "header": "Instalador NextFerretOS 1.3 (Furão Quantico) BETA TCS",
         "sel_lang": "Selecione o Idioma do Instalador",
         "menu_host": "Definir Hostname",
         "menu_disk": "Selecionar Disco",
@@ -79,7 +79,7 @@ TEXT = {
         "step_de": "Instalando Interface Gráfica...",
         "step_cfg": "Configurando Sistema...",
         "done": "Instalação Concluída!",
-        "uefi_warn": "IMPORTANTE: Você PRECISA adicionar a entrada de boot manualmente na BIOS/UEFI!\nCaminho: \\EFI\\NextFerretOS\\grubx64.efi",
+        "uefi_warn": "IMPORTANTE: Você PRECISA adicionar a entrada de boot manualmente na BIOS/UEFI Caso use um sistema UEFI \nCaminho: \\EFI\\NextFerretOS\\grubx64.efi",
         "err_root": "Erro: Execute como root.",
         "err_tool": "Erro: Ferramenta faltando: {}",
         "summary": "Resumo da Configuração",
@@ -265,6 +265,7 @@ class Installer:
             ("/usr/share/applications/updater.desktop", "usr/share/applications/updater.desktop", False),
             ("/usr/share/icons/hicolor/4000x4000/distributor-logo.png", "usr/share/icons/hicolor/4000x4000/distributor-logo.png", False),
             ("/etc/plymouth/plymouthd.conf", "etc/plymouth/plymouthd.conf", False)
+            ("/etc/motd", "etc/motd",False)
         ]
 
         for src, dest_rel, make_exec in custom_files:
