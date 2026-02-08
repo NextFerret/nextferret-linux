@@ -2,9 +2,10 @@
 <img width="4000" height="4000" alt="nextferretos" src="https://github.com/user-attachments/assets/caa990ae-b6a8-4e8f-b44d-26349da9b883" />
 
 ---
-# NextFerretOS:The Future is Not Immutable
+THE SYSTEM IS IN A UNSTABLE AND TESTING STATE.
 ---
-
+---
+# NextFerretOS:The Future is Not Immutable
 NextFerretOS is based on Debian Stable, offering a stable and mutable base for everyday users, developers, and power users alike. While it inherits Debian’s rock-solid reliability, NextFerretOS refuses the idea that stability must come at the cost of flexibility.
 
 The system is designed to give you full control over your operating system. You are free to modify, replace, and extend the system without artificial limitations. If you can’t insert a file in /usr, the operating system is not truly yours — and NextFerretOS takes that philosophy seriously.
@@ -35,6 +36,4 @@ a processor with 1 or 2 cores that haves 1 GHz
 
 ---
 
-# Latest Release: 1.1 (Ferret War Dance)
 
----
