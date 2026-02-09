@@ -1,4 +1,4 @@
-<img width="500" height="500" alt="2" src="https://github.com/user-attachments/assets/af514683-cd6c-4568-baa2-9c7eefd0d050" />
+<img width="200" height="200" alt="Logo" src="https://github.com/user-attachments/assets/af514683-cd6c-4568-baa2-9c7eefd0d050" />
 
 ---
 THE SYSTEM IS IN A UNSTABLE AND TESTING STATE.
