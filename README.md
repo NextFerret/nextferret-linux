@@ -1,5 +1,4 @@
-
-<img width="4000" height="4000" alt="nextferretos" src="https://github.com/user-attachments/assets/caa990ae-b6a8-4e8f-b44d-26349da9b883" />
+<img width="500" height="500" alt="2" src="https://github.com/user-attachments/assets/af514683-cd6c-4568-baa2-9c7eefd0d050" />
 
 ---
 THE SYSTEM IS IN A UNSTABLE AND TESTING STATE.
