@@ -1,4 +1,5 @@
-<img width="200" height="200" alt="Logo" src="https://github.com/user-attachments/assets/af514683-cd6c-4568-baa2-9c7eefd0d050" />
+
+<img width="1676" height="376" alt="NextFerretOS(2)" src="https://github.com/user-attachments/assets/027954f6-bc45-4ae0-9a49-63aa190bc8fa" />
 
 ---
 THE SYSTEM IS IN A UNSTABLE AND TESTING STATE.
