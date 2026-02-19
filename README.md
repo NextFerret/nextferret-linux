@@ -11,7 +11,7 @@ NextFerretOS is based on Debian Stable, offering a rock-solid and mutable base f
 
 The system is designed to give you full control over your operating system. You are free to modify, replace, and extend the system without artificial limitations. If you can’t modify a file in /usr, the operating system is not truly yours—and NextFerretOS takes that philosophy seriously.
 
-By refusing the overhead of Flatpaks, Snaps, and traditional heavy containers, the OS stays clean, predictable, and performant. Instead, it leverages NF-Tree: a custom-built atomic system that provides the safety of image-based deployments while remaining fully mutable.
+By refusing the overhead of Flatpaks, Snaps, and traditional heavy containers, the OS stays clean, predictable, and performant. Instead, it leverages NF-Tree: a custom-built atomic system that provides the safety of snapshot-based deployments while remaining fully mutable.
 # Key Features
 
 NF-Tree Technology: Experience the best of both worlds. NF-Tree handles system updates atomically to ensure boot integrity, yet keeps the filesystem open and modifiable for deep customization.
