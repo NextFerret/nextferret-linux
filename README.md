@@ -5,7 +5,7 @@
 THE SYSTEM IS IN A UNSTABLE AND TESTING STATE.
 ---
 ---
-# NextFerretOS:The Future is Not Immutable
+# NextFerretOS:The Future is Not Immutable,It is Atomic and Mutable
 NextFerretOS is based on Debian Stable, offering a rock-solid and mutable base for everyday users, developers, and power users alike. While it inherits Debian’s legendary reliability, NextFerretOS rejects the idea that stability must come at the cost of flexibility or modern system management.
 # The Philosophy of Ownership
 
