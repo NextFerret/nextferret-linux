@@ -26,7 +26,9 @@ NextFerretOS adapts to you — not the other way around. It’s a system that re
 ---
 # Minimum Requirements
 a processor with 1 or 2 cores that haves 1 GHz
+
 512MB or 2 GB of RAM
+
 A UEFI System
 ---
 ---
