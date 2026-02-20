@@ -1,491 +1,747 @@
 # This is the nescesarry packages for NextFerretOS
-adduser
-adwaita-icon-theme
-apparmor
-apt
-apt-utils
-arch-test
-at-spi2-common
-at-spi2-core
-base-files
-base-passwd
-bash
-bsdutils
-btrfs-progs
-busybox
-ca-certificates
-coreutils
-cpio
-cron
-cron-daemon-common
-cryptsetup
-cryptsetup-bin
-dash
-dbus
-dbus-bin
-dbus-daemon
-dbus-session-bus-common
-dbus-system-bus-common
-dbus-user-session
-dconf-gsettings-backend
-dconf-service
-debconf
-debconf-i18n
-debian-archive-keyring
-debianutils
-debootstrap
-dhcpcd-base
-diffutils
-distro-info
-distro-info-data
-dmidecode
-dmsetup
-dns-root-data
-dnsmasq-base
-dosfstools
-dpkg
-dracut-install
-e2fsprogs
-efibootmgr
-fdisk
-findutils
-firmware-ath9k-htc
-firmware-carl9170
-firmware-linux-free
-fontconfig
-fontconfig-config
-fonts-cantarell
-fonts-dejavu-core
-fonts-dejavu-mono
-gcc-14-base
-genisoimage
-gettext-base
-git
-git-man
-grep
-grub-common
-grub-efi-amd64-bin
-grub-efi-amd64-signed
-grub-efi-amd64-unsigned
-grub-pc-bin
-grub2-common
-gsettings-desktop-schemas
-gtk-update-icon-cache
-gzip
-hicolor-icon-theme
-hostname
-ifupdown
-init
-init-system-helpers
-initramfs-tools
-initramfs-tools-bin
-initramfs-tools-core
-iproute2
-iputils-ping
-keyboard-configuration
-klibc-utils
-kmod
-less
-lib32gcc-s1
-lib32stdc++6
-libacl1
-libapparmor1
-libapt-pkg7.0
-libatk-bridge2.0-0t64
-libatk1.0-0t64
-libatomic1
-libatspi2.0-0t64
-libattr1
-libaudit-common
-libaudit1
-libavahi-client3
-libavahi-common-data
-libavahi-common3
-libblkid1
-libbluetooth3
-libbpf1
-libbrotli1
-libbsd0
-libburn4t64
-libbz2-1.0
-libc-bin
-libc-l10n
-libc6
-libc6-i386
-libcairo-gobject2
-libcairo2
-libcap-ng0
-libcap2
-libcap2-bin
-libcbor0.10
-libclang-common-19-dev
-libclang-cpp19
-libclang-rt-19-dev
-libclc-19
-libclc-19-dev
-libcloudproviders0
-libcolord2
-libcom-err2
-libcrypt1
-libcryptsetup12
-libcups2t64
-libcurl3t64-gnutls
-libdatrie1
-libdav1d7
-libdb5.3t64
-libdbus-1-3
-libdconf1
-libdebconfclient0
-libdecor-0-0
-libdecor-0-plugin-1-gtk
-libdeflate0
-libdevmapper1.02.1
-libdrm-amdgpu1
-libdrm-common
-libdrm-dev
-libdrm-intel1
-libdrm-nouveau2
-libdrm-radeon1
-libdrm2
-libduktape207
-libedit2
-libefiboot1t64
-libefivar1t64
-libegl-mesa0
-libegl1
-libelf1t64
-libepoxy0
-liberror-perl
-libevdev2
-libexpat1
-libext2fs2t64
-libfdisk1
-libffi8
-libfido2-1
-libfontconfig1
-libfontenc1
-libfreetype6
-libfribidi0
-libfuse3-4
-libgbm1
-libgcc-s1
-libgdbm-compat4t64
-libgdbm6t64
-libgdk-pixbuf-2.0-0
-libgdk-pixbuf2.0-bin
-libgdk-pixbuf2.0-common
-libgl-dev
-libgl1
-libgl1-mesa-dri
-libgles2
-libglib2.0-0t64
-libglib2.0-data
-libglvnd0
-libglx-dev
-libglx-mesa0
-libglx0
-libgmp10
-libgnutls30t64
-libgraphite2-3
-libgssapi-krb5-2
-libgtk-3-0t64
-libgtk-3-bin
-libgtk-3-common
-libgudev-1.0-0
-libharfbuzz0b
-libhogweed6t64
-libice6
-libidn2-0
-libisoburn1t64
-libisofs6t64
-libjansson4
-libjbig0
-libjim0.83
-libjpeg62-turbo
-libjson-c5
-libjte2
-libk5crypto3
-libkeyutils1
-libklibc
-libkmod2
-libkrb5-3
-libkrb5support0
-liblastlog2-2
-liblcms2-2
-libldap-common
-libldap2
-liblerc4
-libllvm19
-libllvmspirvlib19.1
-liblocale-gettext-perl
-liblz4-1
-liblzma5
-liblzo2-2
-libmagic-mgc
-libmagic1t64
-libmbim-glib4
-libmbim-proxy
-libmbim-utils
-libmd0
-libmm-glib0
-libmnl0
-libmount1
-libncursesw6
-libndp0
-libnetfilter-conntrack3
-libnettle8t64
-libnewt0.52
-libnfnetlink0
-libnftables1
-libnftnl11
-libnghttp2-14
-libnghttp3-9
-libngtcp2-16
-libngtcp2-crypto-gnutls8
-libnl-3-200
-libnl-genl-3-200
-libnl-route-3-200
-libnm0
-libp11-kit0
-libpam-modules
-libpam-modules-bin
-libpam-runtime
-libpam-systemd
-libpam0g
-libpango-1.0-0
-libpangocairo-1.0-0
-libpangoft2-1.0-0
-libpangoxft-1.0-0
-libparted2t64
-libpcap0.8t64
-libpciaccess-dev
-libpciaccess0
-libpcre2-8-0
-libpcsclite1
-libperl5.40
-libpixman-1-0
-libplymouth5
-libpng16-16t64
-libpolkit-agent-1-0
-libpolkit-gobject-1-0
-libpopt0
-libproc2-0
-libpsl5t64
-libpython3-stdlib
-libpython3.13-minimal
-libpython3.13-stdlib
-libqmi-glib5
-libqmi-proxy
-libqmi-utils
-libqrtr-glib0
-libreadline8t64
-libreiserfscore0t64
-librsvg2-2
-librsvg2-common
-librtmp1
-libsasl2-2
-libsasl2-modules
-libsasl2-modules-db
-libseccomp2
-libselinux1
-libsemanage-common
-libsemanage2
-libsensors-config
-libsensors5
-libsepol2
-libsharpyuv0
-libslang2
-libsm6
-libsmartcols1
-libsqlite3-0
-libss2
-libssh2-1t64
-libssl3t64
-libstdc++6
-libsystemd-shared
-libsystemd0
-libtasn1-6
-libteamdctl0
-libtext-charwidth-perl
-libtext-iconv-perl
-libtext-wrapi18n-perl
-libthai-data
-libthai0
-libtiff6
-libtinfo6
-libtirpc-common
-libtirpc3t64
-libudev1
-libunistring5
-libunwind8
-libusb-1.0-0
-libuuid1
-libvdpau1
-libvulkan1
-libwayland-client0
-libwayland-cursor0
-libwayland-egl1
-libwayland-server0
-libwebp7
-libx11-6
-libx11-data
-libx11-dev
-libx11-xcb1
-libxau-dev
-libxau6
-libxaw7
-libxcb-dri2-0
-libxcb-dri3-0
-libxcb-glx0
-libxcb-present0
-libxcb-randr0
-libxcb-render0
-libxcb-shm0
-libxcb-sync1
-libxcb-util1
-libxcb-xfixes0
-libxcb-xkb1
-libxcb1
-libxcb1-dev
-libxcomposite1
-libxcursor1
-libxcvt0
-libxdamage1
-libxdmcp-dev
-libxdmcp6
-libxext6
-libxfixes3
-libxfont2
-libxft2
-libxi6
-libxinerama1
-libxkbcommon-x11-0
-libxkbcommon0
-libxkbfile1
-libxml2
-libxmu6
-libxmuu1
-libxpm4
-libxrandr2
-libxrender1
-libxshmfence1
-libxss1
-libxt6t64
-libxtables12
-libxtst6
-libxvmc1
-libxxf86vm1
-libxxhash0
-libz3-4
-libzstd1
-linux-base
-linux-image-6.12.63+deb13-amd64
-linux-image-amd64
-linux-sysctl-defaults
-live-boot
-live-boot-doc
-live-boot-initramfs-tools
-live-config
-live-config-doc
-live-config-systemd
-live-tools
-locales
-login
-login.defs
-logrotate
-logsave
-mawk
-media-types
-mesa-common-dev
-mesa-drm-shim
-mesa-libgallium
-mesa-opencl-icd
-mesa-utils
-mesa-utils-bin
-mesa-va-drivers
-mesa-vdpau-drivers
-mesa-vulkan-drivers
-modemmanager
-mokutil
-mount
-mtools
-nano
-ncurses-base
-ncurses-bin
-netbase
-network-manager
-network-manager-l10n
-nftables
-ocl-icd-libopencl1
-openssh-client
-openssl
-openssl-provider-legacy
-os-prober
-pango1.0-tools
-parted
-passwd
-patch
-perl
-perl-base
-perl-modules-5.40
-plymouth
-plymouth-label
-plymouth-themes
-polkitd
-ppp
-procps
-publicsuffix
-python3
-python3-minimal
-python3.13
-python3.13-minimal
-readline-common
-rsync
-sed
-sensible-utils
-sgml-base
-shared-mime-info
-shim-helpers-amd64-signed
-shim-signed
-shim-signed-common
-shim-unsigned
-squashfs-tools
-sqv
-sudo
-systemd
-systemd-sysv
-sysvinit-utils
-tar
-tzdata
-udev
-usb-modeswitch
-usb-modeswitch-data
-user-setup
-util-linux
-uuid-runtime
-vim-common
-vim-tiny
-wget
-whiptail
-wireless-regdb
-wpasupplicant
-x11-common
-x11-xkb-utils
-x11proto-dev
-xauth
-xcvt
-xdg-user-dirs
-xfonts-base
-xfonts-encodings
-xfonts-utils
-xkb-data
-xml-core
-xorg-sgml-doctools
-xorriso
-xserver-common
-xserver-xorg-core
-xserver-xorg-video-amdgpu
-xserver-xorg-video-intel
-xtrans-dev
-zlib1g
-zstd
+Listing...
+adduser/stable,now 3.152 all [installed]
+adwaita-icon-theme/stable,now 48.1-1 all [installed,automatic]
+alsa-topology-conf/stable,now 1.2.5.1-3 all [installed,automatic]
+alsa-ucm-conf/stable,now 1.2.14-1 all [installed,automatic]
+amd64-microcode/stable,now 3.20250311.1 amd64 [installed,automatic]
+apparmor/stable,now 4.1.0-1 amd64 [installed,automatic]
+apt-utils/stable,now 3.0.3 amd64 [installed]
+apt/stable,now 3.0.3 amd64 [installed]
+arch-test/stable,now 0.22-1 all [installed,automatic]
+at-spi2-common/stable,now 2.56.2-1+deb13u1 all [installed,automatic]
+at-spi2-core/stable,now 2.56.2-1+deb13u1 amd64 [installed,automatic]
+base-files/stable,now 13.8+deb13u3 amd64 [installed]
+base-passwd/stable,now 3.6.7 amd64 [installed]
+bash/stable,now 5.2.37-2+b7 amd64 [installed]
+binutils-common/stable,now 2.44-3 amd64 [installed,automatic]
+binutils-x86-64-linux-gnu/stable,now 2.44-3 amd64 [installed,automatic]
+binutils/stable,now 2.44-3 amd64 [installed,automatic]
+bsdextrautils/stable,now 2.41-5 amd64 [installed,automatic]
+bsdutils/stable,now 1:2.41-5 amd64 [installed]
+btrfs-progs/stable,now 6.14-1 amd64 [installed]
+build-essential/stable,now 12.12 amd64 [installed,automatic]
+busybox/stable,now 1:1.37.0-6+b5 amd64 [installed,automatic]
+bzip2/stable,now 1.0.8-6 amd64 [installed,automatic]
+ca-certificates/stable,now 20250419 all [installed,automatic]
+coreutils/stable,now 9.7-3 amd64 [installed]
+cpio/stable,now 2.15+dfsg-2 amd64 [installed]
+cpp-14-x86-64-linux-gnu/stable,now 14.2.0-19 amd64 [installed,automatic]
+cpp-14/stable,now 14.2.0-19 amd64 [installed,automatic]
+cpp-x86-64-linux-gnu/stable,now 4:14.2.0-1 amd64 [installed,automatic]
+cpp/stable,now 4:14.2.0-1 amd64 [installed,automatic]
+cron-daemon-common/stable,now 3.0pl1-197 all [installed]
+cron/stable,now 3.0pl1-197 amd64 [installed]
+cryptsetup-bin/stable,now 2:2.7.5-2 amd64 [installed,automatic]
+cryptsetup/stable,now 2:2.7.5-2 amd64 [installed]
+cups-common/stable,now 2.4.10-3+deb13u2 all [installed,automatic]
+dash/stable,now 0.5.12-12 amd64 [installed]
+dbus-bin/stable,now 1.16.2-2 amd64 [installed,automatic]
+dbus-daemon/stable,now 1.16.2-2 amd64 [installed,automatic]
+dbus-session-bus-common/stable,now 1.16.2-2 all [installed,automatic]
+dbus-system-bus-common/stable,now 1.16.2-2 all [installed,automatic]
+dbus-user-session/stable,now 1.16.2-2 amd64 [installed,automatic]
+dbus/stable,now 1.16.2-2 amd64 [installed,automatic]
+dconf-gsettings-backend/stable,now 0.40.0-5 amd64 [installed,automatic]
+dconf-service/stable,now 0.40.0-5 amd64 [installed,automatic]
+debconf-i18n/stable,now 1.5.91 all [installed]
+debconf/stable,now 1.5.91 all [installed]
+debian-archive-keyring/stable,now 2025.1 all [installed]
+debianutils/stable,now 5.23.2 amd64 [installed]
+debootstrap/stable,now 1.0.141 all [installed]
+dhcpcd-base/stable,now 1:10.1.0-11+deb13u2 amd64 [installed]
+dialog/stable,now 1.3-20250116-1 amd64 [installed]
+diffutils/stable,now 1:3.10-4 amd64 [installed]
+dirmngr/stable,now 2.4.7-21+deb13u1+b1 amd64 [installed,automatic]
+distro-info-data/stable,now 0.66+deb13u1 all [installed,automatic]
+distro-info/stable,now 1.13 amd64 [installed,automatic]
+dmidecode/stable,now 3.6-2 amd64 [installed]
+dmsetup/stable,now 2:1.02.205-2 amd64 [installed,automatic]
+dns-root-data/stable,now 2025080400~deb13u1 all [installed,automatic]
+dnsmasq-base/stable,now 2.91-1 amd64 [installed,automatic]
+dosfstools/stable,now 4.2-1.2 amd64 [installed]
+dpkg-dev/stable,now 1.22.21 all [installed,automatic]
+dpkg/stable,now 1.22.21 amd64 [installed]
+dracut-install/stable,now 106-6 amd64 [installed,automatic]
+e2fsprogs/stable,now 1.47.2-3+b7 amd64 [installed]
+efibootmgr/stable,now 18-2 amd64 [installed,automatic]
+eject/stable,now 2.41-5 amd64 [installed,automatic]
+fakeroot/stable,now 1.37.1.1-1 amd64 [installed,automatic]
+fdisk/stable,now 2.41-5 amd64 [installed]
+findutils/stable,now 4.10.0-3 amd64 [installed]
+firefox-esr/stable-security,now 140.7.0esr-1~deb13u1 amd64 [installed,automatic]
+firmware-amd-graphics/stable,now 20250410-2 all [installed,automatic]
+firmware-ath9k-htc/stable,now 1.4.0-110-ge888634+dfsg1-0.1 all [installed]
+firmware-carl9170/stable,now 1.9.9-450-gad1c721+dfsg-0.1 all [installed]
+firmware-intel-graphics/stable,now 20250410-2 all [installed,automatic]
+firmware-intel-misc/stable,now 20250410-2 all [installed,automatic]
+firmware-linux-free/stable,now 20241210-2 all [installed]
+firmware-linux-nonfree/stable,now 20250410-2 all [installed,automatic]
+firmware-linux/stable,now 20250410-2 all [installed]
+firmware-mediatek/stable,now 20250410-2 all [installed,automatic]
+firmware-misc-nonfree/stable,now 20250410-2 all [installed,automatic]
+firmware-nvidia-graphics/stable,now 20250410-2 all [installed,automatic]
+fontconfig-config/stable,now 2.15.0-2.3 amd64 [installed,automatic]
+fontconfig/stable,now 2.15.0-2.3 amd64 [installed]
+fonts-cantarell/stable,now 0.303.1-4 all [installed,automatic]
+fonts-dejavu-core/stable,now 2.37-8 all [installed,automatic]
+fonts-dejavu-mono/stable,now 2.37-8 all [installed,automatic]
+fonts-liberation-sans-narrow/stable,now 1:1.07.6-4 all [installed,automatic]
+fonts-liberation/stable,now 1:2.1.5-3 all [installed,automatic]
+fonts-noto-core/stable,now 20201225-2 all [installed,automatic]
+fonts-noto-mono/stable,now 20201225-2 all [installed,automatic]
+fonts-urw-base35/stable,now 20200910-8 all [installed,automatic]
+fuse3/stable,now 3.17.2-3 amd64 [installed,automatic]
+g++-14-x86-64-linux-gnu/stable,now 14.2.0-19 amd64 [installed,automatic]
+g++-14/stable,now 14.2.0-19 amd64 [installed,automatic]
+g++-x86-64-linux-gnu/stable,now 4:14.2.0-1 amd64 [installed,automatic]
+g++/stable,now 4:14.2.0-1 amd64 [installed,automatic]
+gawk/stable,now 1:5.2.1-2+b1 amd64 [installed]
+gcc-14-base/stable,now 14.2.0-19 amd64 [installed]
+gcc-14-x86-64-linux-gnu/stable,now 14.2.0-19 amd64 [installed,automatic]
+gcc-14/stable,now 14.2.0-19 amd64 [installed,automatic]
+gcc-x86-64-linux-gnu/stable,now 4:14.2.0-1 amd64 [installed,automatic]
+gcc/stable,now 4:14.2.0-1 amd64 [installed,automatic]
+gcr4/stable,now 4.4.0.1-3 amd64 [installed,automatic]
+gcr/stable,now 3.41.2-3 amd64 [installed,automatic]
+gdb/stable,now 16.3-1 amd64 [installed,automatic]
+genisoimage/stable,now 9:1.1.11-4 amd64 [installed]
+gettext-base/stable,now 0.23.1-2 amd64 [installed,automatic]
+git-man/stable,now 1:2.47.3-0+deb13u1 all [installed,automatic]
+git/stable,now 1:2.47.3-0+deb13u1 amd64 [installed]
+gnupg-l10n/stable,now 2.4.7-21+deb13u1 all [installed,automatic]
+gnupg-utils/stable,now 2.4.7-21+deb13u1+b1 amd64 [installed,automatic]
+gnupg/stable,now 2.4.7-21+deb13u1 all [installed,automatic]
+gnutls-bin/stable,now 3.8.9-3+deb13u1 amd64 [installed,automatic]
+gpg-agent/stable,now 2.4.7-21+deb13u1+b1 amd64 [installed,automatic]
+gpg-wks-client/stable,now 2.4.7-21+deb13u1+b1 amd64 [installed,automatic]
+gpg/stable,now 2.4.7-21+deb13u1+b1 amd64 [installed,automatic]
+gpgconf/stable,now 2.4.7-21+deb13u1+b1 amd64 [installed,automatic]
+gpgsm/stable,now 2.4.7-21+deb13u1+b1 amd64 [installed,automatic]
+gpgv/stable,now 2.4.7-21+deb13u1+b1 amd64 [installed,automatic]
+grep/stable,now 3.11-4 amd64 [installed]
+groff-base/stable,now 1.23.0-9 amd64 [installed,automatic]
+grub-common/stable,now 2.12-9 amd64 [installed]
+grub-efi-amd64-bin/stable,now 2.12-9 amd64 [installed]
+grub-efi-amd64-signed/stable,now 1+2.12+9 amd64 [installed,automatic]
+grub-efi-amd64-unsigned/stable,now 2.12-9 amd64 [installed,automatic]
+grub-pc-bin/stable,now 2.12-9 amd64 [installed]
+grub2-common/stable,now 2.12-9 amd64 [installed,automatic]
+gsettings-desktop-schemas/stable,now 48.0-1 all [installed,automatic]
+gstreamer1.0-gl/stable,now 1.26.2-1 amd64 [installed,automatic]
+gstreamer1.0-plugins-base/stable,now 1.26.2-1 amd64 [installed,automatic]
+gtk-update-icon-cache/stable,now 4.18.6+ds-2 amd64 [installed,automatic]
+gzip/stable,now 1.13-1 amd64 [installed]
+hicolor-icon-theme/stable,now 0.18-2 all [installed,automatic]
+hostname/stable,now 3.25 amd64 [installed]
+ifupdown/stable,now 0.8.44 amd64 [installed]
+init-system-helpers/stable,now 1.69~deb13u1 all [installed]
+init/stable,now 1.69~deb13u1 amd64 [installed]
+initramfs-tools-bin/stable,now 0.148.3 amd64 [installed,automatic]
+initramfs-tools-core/stable,now 0.148.3 all [installed,automatic]
+initramfs-tools/stable,now 0.148.3 all [installed,automatic]
+inotify-tools/stable,now 4.23.9.0-2+b1 amd64 [installed]
+intel-microcode/stable,now 3.20251111.1~deb13u1 amd64 [installed,automatic]
+iproute2/stable,now 6.15.0-1 amd64 [installed]
+iputils-ping/stable,now 3:20240905-3 amd64 [installed]
+iso-codes/stable,now 4.18.0-1 all [installed,automatic]
+iucode-tool/stable,now 2.3.1-3 amd64 [installed,automatic]
+keyboard-configuration/stable,now 1.242~deb13u1 all [installed,automatic]
+klibc-utils/stable,now 2.0.14-1 amd64 [installed,automatic]
+kmod/stable,now 34.2-2 amd64 [installed]
+less/stable,now 668-1 amd64 [installed]
+lib32gcc-s1/stable,now 14.2.0-19 amd64 [installed,automatic]
+lib32stdc++6/stable,now 14.2.0-19 amd64 [installed,automatic]
+libabsl20240722/stable,now 20240722.0-4 amd64 [installed,automatic]
+libacl1/stable,now 2.3.2-2+b1 amd64 [installed]
+libalgorithm-diff-perl/stable,now 1.201-1 all [installed,automatic]
+libalgorithm-diff-xs-perl/stable,now 0.04-9 amd64 [installed,automatic]
+libalgorithm-merge-perl/stable,now 0.08-5 all [installed,automatic]
+libaom3/stable,now 3.12.1-1 amd64 [installed,automatic]
+libapparmor1/stable,now 4.1.0-1 amd64 [installed]
+libapt-pkg7.0/stable,now 3.0.3 amd64 [installed]
+libarchive13t64/stable,now 3.7.4-4 amd64 [installed,automatic]
+libasan8/stable,now 14.2.0-19 amd64 [installed,automatic]
+libasound2-data/stable,now 1.2.14-1 all [installed,automatic]
+libasound2t64/stable,now 1.2.14-1 amd64 [installed,automatic]
+libassuan9/stable,now 3.0.2-2 amd64 [installed,automatic]
+libasyncns0/stable,now 0.8-6+b5 amd64 [installed,automatic]
+libatk-bridge2.0-0t64/stable,now 2.56.2-1+deb13u1 amd64 [installed,automatic]
+libatk1.0-0t64/stable,now 2.56.2-1+deb13u1 amd64 [installed,automatic]
+libatomic1/stable,now 14.2.0-19 amd64 [installed,automatic]
+libatspi2.0-0t64/stable,now 2.56.2-1+deb13u1 amd64 [installed,automatic]
+libattr1/stable,now 1:2.5.2-3 amd64 [installed]
+libaudit-common/stable,now 1:4.0.2-2 all [installed]
+libaudit1/stable,now 1:4.0.2-2+b2 amd64 [installed]
+libavahi-client3/stable,now 0.8-16 amd64 [installed,automatic]
+libavahi-common-data/stable,now 0.8-16 amd64 [installed,automatic]
+libavahi-common3/stable,now 0.8-16 amd64 [installed,automatic]
+libavcodec61/stable,stable-security,now 7:7.1.3-0+deb13u1 amd64 [installed,automatic]
+libavutil59/stable,stable-security,now 7:7.1.3-0+deb13u1 amd64 [installed,automatic]
+libbabeltrace1/stable,now 1.5.11-4+b2 amd64 [installed,automatic]
+libbinutils/stable,now 2.44-3 amd64 [installed,automatic]
+libblkid1/stable,now 2.41-5 amd64 [installed]
+libbluetooth3/stable,now 5.82-1.1 amd64 [installed,automatic]
+libbpf1/stable,now 1:1.5.0-3 amd64 [installed]
+libbrotli1/stable,now 1.1.0-2+b7 amd64 [installed,automatic]
+libbsd0/stable,now 0.12.2-2 amd64 [installed]
+libburn4t64/stable,now 1.5.6-1.1+b1 amd64 [installed,automatic]
+libbz2-1.0/stable,now 1.0.8-6 amd64 [installed]
+libc-bin/stable,now 2.41-12+deb13u1 amd64 [installed]
+libc-dev-bin/stable,now 2.41-12+deb13u1 amd64 [installed,automatic]
+libc-l10n/stable,now 2.41-12+deb13u1 all [installed,automatic]
+libc6-dev/stable,now 2.41-12+deb13u1 amd64 [installed,automatic]
+libc6-i386/stable,now 2.41-12+deb13u1 amd64 [installed,automatic]
+libc6/stable,now 2.41-12+deb13u1 amd64 [installed]
+libcairo-gobject2/stable,now 1.18.4-1+b1 amd64 [installed,automatic]
+libcairo-script-interpreter2/stable,now 1.18.4-1+b1 amd64 [installed,automatic]
+libcairo2/stable,now 1.18.4-1+b1 amd64 [installed,automatic]
+libcanberra-pulse/stable,now 0.30-18 amd64 [installed,automatic]
+libcanberra0/stable,now 0.30-18 amd64 [installed,automatic]
+libcap-ng0/stable,now 0.8.5-4+b1 amd64 [installed]
+libcap2-bin/stable,now 1:2.75-10+b3 amd64 [installed]
+libcap2/stable,now 1:2.75-10+b3 amd64 [installed]
+libcbor0.10/stable,now 0.10.2-2 amd64 [installed,automatic]
+libcc1-0/stable,now 14.2.0-19 amd64 [installed,automatic]
+libcdparanoia0/stable,now 3.10.2+debian-14+b1 amd64 [installed,automatic]
+libclang-common-19-dev/stable,now 1:19.1.7-3+b1 amd64 [installed,automatic]
+libclang-cpp19/stable,now 1:19.1.7-3+b1 amd64 [installed,automatic]
+libclang-rt-19-dev/stable,now 1:19.1.7-3+b1 amd64 [installed,automatic]
+libclc-19-dev/stable,now 1:19.1.7-3 all [installed,automatic]
+libclc-19/stable,now 1:19.1.7-3 all [installed,automatic]
+libcloudproviders0/stable,now 0.3.6-2 amd64 [installed,automatic]
+libcodec2-1.2/stable,now 1.2.0-3 amd64 [installed,automatic]
+libcolord2/stable,now 1.4.7-3 amd64 [installed,automatic]
+libcom-err2/stable,now 1.47.2-3+b7 amd64 [installed]
+libconfig++11/stable,now 1.7.3-2 amd64 [installed,automatic]
+libcrypt-dev/stable,now 1:4.4.38-1 amd64 [installed,automatic]
+libcrypt1/stable,now 1:4.4.38-1 amd64 [installed]
+libcryptsetup12/stable,now 2:2.7.5-2 amd64 [installed,automatic]
+libctf-nobfd0/stable,now 2.44-3 amd64 [installed,automatic]
+libctf0/stable,now 2.44-3 amd64 [installed,automatic]
+libcups2t64/stable,now 2.4.10-3+deb13u2 amd64 [installed,automatic]
+libcurl3t64-gnutls/stable,now 8.14.1-2+deb13u2 amd64 [installed,automatic]
+libdatrie1/stable,now 0.2.13-3+b1 amd64 [installed,automatic]
+libdav1d7/stable,now 1.5.1-1 amd64 [installed,automatic]
+libdb5.3t64/stable,now 5.3.28+dfsg2-9 amd64 [installed]
+libdbus-1-3/stable,now 1.16.2-2 amd64 [installed,automatic]
+libdconf1/stable,now 0.40.0-5 amd64 [installed,automatic]
+libdebconfclient0/stable,now 0.280 amd64 [installed]
+libdebuginfod-common/stable,now 0.192-4 all [installed,automatic]
+libdebuginfod1t64/stable,now 0.192-4 amd64 [installed,automatic]
+libdecor-0-0/stable,now 0.2.2-2 amd64 [installed,automatic]
+libdecor-0-plugin-1-gtk/stable,now 0.2.2-2 amd64 [installed,automatic]
+libdeflate0/stable,now 1.23-2 amd64 [installed,automatic]
+libdevmapper1.02.1/stable,now 2:1.02.205-2 amd64 [installed,automatic]
+libdialog15/stable,now 1.3-20250116-1 amd64 [installed,automatic]
+libdpkg-perl/stable,now 1.22.21 all [installed,automatic]
+libdrm-amdgpu1/stable,now 2.4.124-2 amd64 [installed,automatic]
+libdrm-common/stable,now 2.4.124-2 all [installed,automatic]
+libdrm-dev/stable,now 2.4.124-2 amd64 [installed,automatic]
+libdrm-intel1/stable,now 2.4.124-2 amd64 [installed,automatic]
+libdrm-nouveau2/stable,now 2.4.124-2 amd64 [installed,automatic]
+libdrm-radeon1/stable,now 2.4.124-2 amd64 [installed,automatic]
+libdrm2/stable,now 2.4.124-2 amd64 [installed,automatic]
+libduktape207/stable,now 2.7.0-2+b2 amd64 [installed,automatic]
+libdw1t64/stable,now 0.192-4 amd64 [installed,automatic]
+libebur128-1/stable,now 1.2.6-1+b2 amd64 [installed,automatic]
+libedit2/stable,now 3.1-20250104-1 amd64 [installed]
+libefiboot1t64/stable,now 38-3.1+b1 amd64 [installed,automatic]
+libefivar1t64/stable,now 38-3.1+b1 amd64 [installed,automatic]
+libegl-mesa0/stable,now 25.0.7-2 amd64 [installed,automatic]
+libegl1/stable,now 1.7.0-1+b2 amd64 [installed,automatic]
+libelf1t64/stable,now 0.192-4 amd64 [installed]
+libepoxy0/stable,now 1.5.10-2 amd64 [installed,automatic]
+liberror-perl/stable,now 0.17030-1 all [installed,automatic]
+libevdev2/stable,now 1.13.4+dfsg-1 amd64 [installed,automatic]
+libevent-2.1-7t64/stable,now 2.1.12-stable-10+b1 amd64 [installed,automatic]
+libexpat1/stable,now 2.7.1-2 amd64 [installed,automatic]
+libext2fs2t64/stable,now 1.47.2-3+b7 amd64 [installed]
+libfakeroot/stable,now 1.37.1.1-1 amd64 [installed,automatic]
+libfdisk1/stable,now 2.41-5 amd64 [installed]
+libffado2/stable,now 2.4.9-2 amd64 [installed,automatic]
+libffi8/stable,now 3.4.8-2 amd64 [installed,automatic]
+libfftw3-single3/stable,now 3.3.10-2+b1 amd64 [installed,automatic]
+libfido2-1/stable,now 1.15.0-1+b1 amd64 [installed,automatic]
+libfile-fcntllock-perl/stable,now 0.22-4+b4 amd64 [installed,automatic]
+libflac14/stable,now 1.5.0+ds-2 amd64 [installed,automatic]
+libfontconfig1/stable,now 2.15.0-2.3 amd64 [installed,automatic]
+libfontenc1/stable,now 1:1.1.8-1+b2 amd64 [installed,automatic]
+libfreeaptx0/stable,now 0.2.2-1 amd64 [installed,automatic]
+libfreetype6/stable,now 2.13.3+dfsg-1 amd64 [installed,automatic]
+libfribidi0/stable,now 1.0.16-1 amd64 [installed,automatic]
+libfuse3-4/stable,now 3.17.2-3 amd64 [installed,automatic]
+libgbm1/stable,now 25.0.7-2 amd64 [installed,automatic]
+libgcc-14-dev/stable,now 14.2.0-19 amd64 [installed,automatic]
+libgcc-s1/stable,now 14.2.0-19 amd64 [installed]
+libgck-1-0/stable,now 3.41.2-3 amd64 [installed,automatic]
+libgck-2-2/stable,now 4.4.0.1-3 amd64 [installed,automatic]
+libgcr-4-4/stable,now 4.4.0.1-3 amd64 [installed,automatic]
+libgcr-base-3-1/stable,now 3.41.2-3 amd64 [installed,automatic]
+libgcr-ui-3-1/stable,now 3.41.2-3 amd64 [installed,automatic]
+libgcrypt20/stable,now 1.11.0-7 amd64 [installed,automatic]
+libgdbm-compat4t64/stable,now 1.24-2 amd64 [installed,automatic]
+libgdbm6t64/stable,now 1.24-2 amd64 [installed,automatic]
+libgdk-pixbuf-2.0-0/stable,now 2.42.12+dfsg-4 amd64 [installed,automatic]
+libgdk-pixbuf2.0-bin/stable,now 2.42.12+dfsg-4 amd64 [installed,automatic]
+libgdk-pixbuf2.0-common/stable,now 2.42.12+dfsg-4 all [installed,automatic]
+libgl-dev/stable,now 1.7.0-1+b2 amd64 [installed,automatic]
+libgl1-mesa-dri/stable,now 25.0.7-2 amd64 [installed]
+libgl1/stable,now 1.7.0-1+b2 amd64 [installed,automatic]
+libgles2/stable,now 1.7.0-1+b2 amd64 [installed,automatic]
+libglib2.0-0t64/stable,now 2.84.4-3~deb13u2 amd64 [installed,automatic]
+libglib2.0-data/stable,now 2.84.4-3~deb13u2 all [installed,automatic]
+libglibmm-2.4-1t64/stable,now 2.66.8-1 amd64 [installed,automatic]
+libglvnd0/stable,now 1.7.0-1+b2 amd64 [installed,automatic]
+libglx-dev/stable,now 1.7.0-1+b2 amd64 [installed,automatic]
+libglx-mesa0/stable,now 25.0.7-2 amd64 [installed]
+libglx0/stable,now 1.7.0-1+b2 amd64 [installed,automatic]
+libgmp10/stable,now 2:6.3.0+dfsg-3 amd64 [installed]
+libgnutls-dane0t64/stable,now 3.8.9-3+deb13u1 amd64 [installed,automatic]
+libgnutls30t64/stable,now 3.8.9-3+deb13u1 amd64 [installed,automatic]
+libgomp1/stable,now 14.2.0-19 amd64 [installed,automatic]
+libgpg-error-l10n/stable,now 1.51-4 all [installed,automatic]
+libgpg-error0/stable,now 1.51-4 amd64 [installed,automatic]
+libgpm2/stable,now 1.20.7-11+b2 amd64 [installed,automatic]
+libgprofng0/stable,now 2.44-3 amd64 [installed,automatic]
+libgraphene-1.0-0/stable,now 1.10.8-5 amd64 [installed,automatic]
+libgraphite2-3/stable,now 1.3.14-2+b1 amd64 [installed,automatic]
+libgsm1/stable,now 1.0.22-1+b2 amd64 [installed,automatic]
+libgssapi-krb5-2/stable,now 1.21.3-5 amd64 [installed]
+libgstreamer-gl1.0-0/stable,now 1.26.2-1 amd64 [installed,automatic]
+libgstreamer-plugins-base1.0-0/stable,now 1.26.2-1 amd64 [installed,automatic]
+libgstreamer1.0-0/stable,now 1.26.2-2 amd64 [installed,automatic]
+libgtk-3-0t64/stable,now 3.24.49-3 amd64 [installed,automatic]
+libgtk-3-bin/stable,now 3.24.49-3 amd64 [installed,automatic]
+libgtk-3-common/stable,now 3.24.49-3 all [installed,automatic]
+libgtk-4-1/stable,now 4.18.6+ds-2 amd64 [installed,automatic]
+libgtk-4-bin/stable,now 4.18.6+ds-2 amd64 [installed,automatic]
+libgtk-4-common/stable,now 4.18.6+ds-2 all [installed,automatic]
+libgtk-4-media-gstreamer/stable,now 4.18.6+ds-2 amd64 [installed,automatic]
+libgudev-1.0-0/stable,now 238-6 amd64 [installed,automatic]
+libharfbuzz-subset0/stable,now 10.2.0-1+b1 amd64 [installed,automatic]
+libharfbuzz0b/stable,now 10.2.0-1+b1 amd64 [installed,automatic]
+libhogweed6t64/stable,now 3.10.1-1 amd64 [installed]
+libhwasan0/stable,now 14.2.0-19 amd64 [installed,automatic]
+libhwy1t64/stable,now 1.2.0-2+b2 amd64 [installed,automatic]
+libice6/stable,now 2:1.1.1-1 amd64 [installed,automatic]
+libidn2-0/stable,now 2.3.8-2 amd64 [installed]
+libiec61883-0/stable,now 1.2.0-7 amd64 [installed,automatic]
+libinotifytools0/stable,now 4.23.9.0-2+b1 amd64 [installed,automatic]
+libinput-bin/stable,now 1.28.1-1 amd64 [installed,automatic]
+libinput10/stable,now 1.28.1-1 amd64 [installed,automatic]
+libipt2/stable,now 2.1.2-1 amd64 [installed,automatic]
+libisl23/stable,now 0.27-1 amd64 [installed,automatic]
+libisoburn1t64/stable,now 1.5.6-1.2+b1 amd64 [installed,automatic]
+libisofs6t64/stable,now 1.5.6.pl01-1.1+b1 amd64 [installed,automatic]
+libitm1/stable,now 14.2.0-19 amd64 [installed,automatic]
+libjansson4/stable,now 2.14-2+b3 amd64 [installed]
+libjbig0/stable,now 2.1-6.1+b2 amd64 [installed,automatic]
+libjim0.83/stable,now 0.83-2 amd64 [installed,automatic]
+libjpeg62-turbo/stable,now 1:2.1.5-4 amd64 [installed,automatic]
+libjson-c5/stable,now 0.18+ds-1 amd64 [installed,automatic]
+libjte2/stable,now 1.22-4+b2 amd64 [installed,automatic]
+libjxl0.11/stable,now 0.11.1-4 amd64 [installed,automatic]
+libk5crypto3/stable,now 1.21.3-5 amd64 [installed]
+libkeyutils1/stable,now 1.6.3-6 amd64 [installed]
+libklibc/stable,now 2.0.14-1 amd64 [installed,automatic]
+libkmod2/stable,now 34.2-2 amd64 [installed]
+libkrb5-3/stable,now 1.21.3-5 amd64 [installed]
+libkrb5support0/stable,now 1.21.3-5 amd64 [installed]
+libksba8/stable,now 1.6.7-2+b1 amd64 [installed,automatic]
+liblastlog2-2/stable,now 2.41-5 amd64 [installed]
+liblc3-1/stable,now 1.1.3+dfsg-1 amd64 [installed,automatic]
+liblcms2-2/stable,now 2.16-2 amd64 [installed,automatic]
+libldacbt-abr2/stable,now 2.0.2.3+git20200429+ed310a0-5 amd64 [installed,automatic]
+libldacbt-enc2/stable,now 2.0.2.3+git20200429+ed310a0-5 amd64 [installed,automatic]
+libldap-common/stable,now 2.6.10+dfsg-1 all [installed,automatic]
+libldap2/stable,now 2.6.10+dfsg-1 amd64 [installed,automatic]
+liblerc4/stable,now 4.0.0+ds-5 amd64 [installed,automatic]
+liblilv-0-0/stable,now 0.24.26-1 amd64 [installed,automatic]
+libllvm19/stable,now 1:19.1.7-3+b1 amd64 [installed,automatic]
+libllvmspirvlib19.1/stable,now 19.1.6-1 amd64 [installed,automatic]
+liblocale-gettext-perl/stable,now 1.07-7+b1 amd64 [installed]
+liblsan0/stable,now 14.2.0-19 amd64 [installed,automatic]
+libltdl7/stable,now 2.5.4-4 amd64 [installed,automatic]
+liblua5.4-0/stable,now 5.4.7-1+b2 amd64 [installed,automatic]
+liblz4-1/stable,now 1.10.0-4 amd64 [installed]
+liblzma5/stable,now 5.8.1-1 amd64 [installed]
+liblzo2-2/stable,now 2.10-3+b1 amd64 [installed,automatic]
+libmagic-mgc/stable,now 1:5.46-5 amd64 [installed,automatic]
+libmagic1t64/stable,now 1:5.46-5 amd64 [installed,automatic]
+libmbim-glib4/stable,now 1.32.0-1 amd64 [installed,automatic]
+libmbim-proxy/stable,now 1.32.0-1 amd64 [installed,automatic]
+libmbim-utils/stable,now 1.32.0-1 amd64 [installed,automatic]
+libmd0/stable,now 1.1.0-2+b1 amd64 [installed]
+libmm-glib0/stable,now 1.24.0-1+deb13u1 amd64 [installed,automatic]
+libmnl0/stable,now 1.0.5-3 amd64 [installed]
+libmount1/stable,now 2.41-5 amd64 [installed]
+libmp3lame0/stable,now 3.100-6+b3 amd64 [installed,automatic]
+libmpc3/stable,now 1.3.1-1+b3 amd64 [installed,automatic]
+libmpfr6/stable,now 4.2.2-1 amd64 [installed,automatic]
+libmpg123-0t64/stable,now 1.32.10-1 amd64 [installed,automatic]
+libmtdev1t64/stable,now 1.1.7-1 amd64 [installed,automatic]
+libmysofa1/stable,now 1.3.3+dfsg-1 amd64 [installed,automatic]
+libncursesw6/stable,now 6.5+20250216-2 amd64 [installed]
+libndp0/stable,now 1.9-1+b1 amd64 [installed,automatic]
+libnetfilter-conntrack3/stable,now 1.1.0-1 amd64 [installed,automatic]
+libnettle8t64/stable,now 3.10.1-1 amd64 [installed]
+libnewt0.52/stable,now 0.52.25-1 amd64 [installed]
+libnfnetlink0/stable,now 1.0.2-3 amd64 [installed,automatic]
+libnftables1/stable,now 1.1.3-1 amd64 [installed]
+libnftnl11/stable,now 1.2.9-1 amd64 [installed]
+libnghttp2-14/stable,now 1.64.0-1.1 amd64 [installed,automatic]
+libnghttp3-9/stable,now 1.8.0-1 amd64 [installed,automatic]
+libngtcp2-16/stable,now 1.11.0-1 amd64 [installed,automatic]
+libngtcp2-crypto-gnutls8/stable,now 1.11.0-1 amd64 [installed,automatic]
+libnl-3-200/stable,now 3.7.0-2 amd64 [installed,automatic]
+libnl-genl-3-200/stable,now 3.7.0-2 amd64 [installed,automatic]
+libnl-route-3-200/stable,now 3.7.0-2 amd64 [installed,automatic]
+libnm0/stable,now 1.52.1-1 amd64 [installed,automatic]
+libnpth0t64/stable,now 1.8-3 amd64 [installed,automatic]
+libnspr4/stable,now 2:4.36-1 amd64 [installed,automatic]
+libnuma1/stable,now 2.0.19-1 amd64 [installed,automatic]
+libogg0/stable,now 1.3.5-3+b2 amd64 [installed,automatic]
+libopenfec1/stable,now 1.4.2.11+dfsg-1 amd64 [installed,automatic]
+libopenjp2-7/stable,now 2.5.3-2.1~deb13u1 amd64 [installed,automatic]
+libopus0/stable,now 1.5.2-2 amd64 [installed,automatic]
+liborc-0.4-0t64/stable,now 1:0.4.41-1 amd64 [installed,automatic]
+libp11-kit0/stable,now 0.25.5-3 amd64 [installed,automatic]
+libpam-modules-bin/stable,now 1.7.0-5 amd64 [installed]
+libpam-modules/stable,now 1.7.0-5 amd64 [installed]
+libpam-runtime/stable,now 1.7.0-5 all [installed]
+libpam-systemd/stable,now 257.9-1~deb13u1 amd64 [installed,automatic]
+libpam0g/stable,now 1.7.0-5 amd64 [installed]
+libpango-1.0-0/stable,now 1.56.3-1 amd64 [installed,automatic]
+libpangocairo-1.0-0/stable,now 1.56.3-1 amd64 [installed,automatic]
+libpangoft2-1.0-0/stable,now 1.56.3-1 amd64 [installed,automatic]
+libpangoxft-1.0-0/stable,now 1.56.3-1 amd64 [installed,automatic]
+libparted2t64/stable,now 3.6-5 amd64 [installed,automatic]
+libpcap0.8t64/stable,now 1.10.5-2 amd64 [installed,automatic]
+libpci3/stable,now 1:3.13.0-2 amd64 [installed,automatic]
+libpciaccess-dev/stable,now 0.17-3+b3 amd64 [installed,automatic]
+libpciaccess0/stable,now 0.17-3+b3 amd64 [installed,automatic]
+libpcre2-8-0/stable,now 10.46-1~deb13u1 amd64 [installed]
+libpcsclite1/stable,now 2.3.3-1 amd64 [installed,automatic]
+libperl5.40/stable,now 5.40.1-6 amd64 [installed,automatic]
+libpipeline1/stable,now 1.5.8-1 amd64 [installed,automatic]
+libpipewire-0.3-0t64/stable,now 1.4.2-1 amd64 [installed,automatic]
+libpipewire-0.3-common/stable,now 1.4.2-1 all [installed,automatic]
+libpipewire-0.3-modules/stable,now 1.4.2-1 amd64 [installed,automatic]
+libpixman-1-0/stable,now 0.44.0-3 amd64 [installed,automatic]
+libplymouth5/stable,now 24.004.60-5 amd64 [installed,automatic]
+libpng16-16t64/stable,now 1.6.48-1+deb13u1 amd64 [installed,upgradable to: 1.6.48-1+deb13u3]
+libpolkit-agent-1-0/stable,now 126-2 amd64 [installed,automatic]
+libpolkit-gobject-1-0/stable,now 126-2 amd64 [installed,automatic]
+libpopt0/stable,now 1.19+dfsg-2 amd64 [installed]
+libproc2-0/stable,now 2:4.0.4-9 amd64 [installed]
+libpsl5t64/stable,now 0.21.2-1.1+b1 amd64 [installed,automatic]
+libpulse0/stable,now 17.0+dfsg1-2+b1 amd64 [installed,automatic]
+libpulsedsp/stable,now 17.0+dfsg1-2+b1 amd64 [installed,automatic]
+libpython3-stdlib/stable,now 3.13.5-1 amd64 [installed,automatic]
+libpython3.13-minimal/stable,now 3.13.5-2 amd64 [installed,automatic]
+libpython3.13-stdlib/stable,now 3.13.5-2 amd64 [installed,automatic]
+libpython3.13/stable,now 3.13.5-2 amd64 [installed,automatic]
+libqmi-glib5/stable,now 1.36.0-1 amd64 [installed,automatic]
+libqmi-proxy/stable,now 1.36.0-1 amd64 [installed,automatic]
+libqmi-utils/stable,now 1.36.0-1 amd64 [installed,automatic]
+libqrencode4/stable,now 4.1.1-2 amd64 [installed,automatic]
+libqrtr-glib0/stable,now 1.2.2-1+b2 amd64 [installed,automatic]
+libquadmath0/stable,now 14.2.0-19 amd64 [installed,automatic]
+librav1e0.7/stable,now 0.7.1-9+b2 amd64 [installed,automatic]
+libraw1394-11/stable,now 2.1.2-2+b2 amd64 [installed,automatic]
+libreadline8t64/stable,now 8.2-6 amd64 [installed]
+libreiserfscore0t64/stable,now 1:3.6.27-9 amd64 [installed,automatic]
+libroc0.4/stable,now 0.4.0+dfsg-5 amd64 [installed,automatic]
+librsvg2-2/stable,now 2.60.0+dfsg-1 amd64 [installed,automatic]
+librsvg2-common/stable,now 2.60.0+dfsg-1 amd64 [installed,automatic]
+librtmp1/stable,now 2.4+20151223.gitfa8646d.1-2+b5 amd64 [installed,automatic]
+libsasl2-2/stable,now 2.1.28+dfsg1-9 amd64 [installed,automatic]
+libsasl2-modules-db/stable,now 2.1.28+dfsg1-9 amd64 [installed,automatic]
+libsasl2-modules/stable,now 2.1.28+dfsg1-9 amd64 [installed,automatic]
+libsbc1/stable,now 2.1-1 amd64 [installed,automatic]
+libseccomp2/stable,now 2.6.0-2 amd64 [installed]
+libsecret-1-0/stable,now 0.21.7-1 amd64 [installed,automatic]
+libsecret-common/stable,now 0.21.7-1 all [installed,automatic]
+libselinux1/stable,now 3.8.1-1 amd64 [installed]
+libsemanage-common/stable,now 3.8.1-1 all [installed]
+libsemanage2/stable,now 3.8.1-1 amd64 [installed]
+libsensors-config/stable,now 1:3.6.2-2 all [installed,automatic]
+libsensors5/stable,now 1:3.6.2-2 amd64 [installed,automatic]
+libsepol2/stable,now 3.8.1-1 amd64 [installed]
+libserd-0-0/stable,now 0.32.4-1 amd64 [installed,automatic]
+libsframe1/stable,now 2.44-3 amd64 [installed,automatic]
+libsharpyuv0/stable,now 1.5.0-0.1 amd64 [installed,automatic]
+libshine3/stable,now 3.1.1-2+b2 amd64 [installed,automatic]
+libsigc++-2.0-0v5/stable,now 2.12.1-3 amd64 [installed,automatic]
+libsigsegv2/stable,now 2.14-1+b2 amd64 [installed,automatic]
+libslang2/stable,now 2.3.3-5+b2 amd64 [installed]
+libsm6/stable,now 2:1.2.6-1 amd64 [installed,automatic]
+libsmartcols1/stable,now 2.41-5 amd64 [installed]
+libsnappy1v5/stable,now 1.2.2-1 amd64 [installed,automatic]
+libsndfile1/stable,now 1.2.2-2+b1 amd64 [installed,automatic]
+libsord-0-0/stable,now 0.16.18-1 amd64 [installed,automatic]
+libsource-highlight-common/stable,now 3.1.9-4.3 all [installed,automatic]
+libsource-highlight4t64/stable,now 3.1.9-4.3+b1 amd64 [installed,automatic]
+libsoxr0/stable,now 0.1.3-4+b2 amd64 [installed,automatic]
+libspa-0.2-bluetooth/stable,now 1.4.2-1 amd64 [installed,automatic]
+libspa-0.2-modules/stable,now 1.4.2-1 amd64 [installed,automatic]
+libspeex1/stable,now 1.2.1-3 amd64 [installed,automatic]
+libspeexdsp1/stable,now 1.2.1-3 amd64 [installed,automatic]
+libsqlite3-0/stable,now 3.46.1-7 amd64 [installed]
+libsratom-0-0/stable,now 0.6.18-1 amd64 [installed,automatic]
+libss2/stable,now 1.47.2-3+b7 amd64 [installed]
+libssh2-1t64/stable,now 1.11.1-1 amd64 [installed,automatic]
+libssl3t64/stable,now 3.5.4-1~deb13u1 amd64 [installed,upgradable to: 3.5.4-1~deb13u2]
+libstdc++-14-dev/stable,now 14.2.0-19 amd64 [installed,automatic]
+libstdc++6/stable,now 14.2.0-19 amd64 [installed]
+libsvtav1enc2/stable,now 2.3.0+dfsg-1 amd64 [installed,automatic]
+libswresample5/stable,stable-security,now 7:7.1.3-0+deb13u1 amd64 [installed,automatic]
+libsystemd-shared/stable,now 257.9-1~deb13u1 amd64 [installed]
+libsystemd0/stable,now 257.9-1~deb13u1 amd64 [installed]
+libtasn1-6/stable,now 4.20.0-2 amd64 [installed,automatic]
+libtdb1/stable,now 2:1.4.13+samba4.22.6+dfsg-0+deb13u1 amd64 [installed,automatic]
+libteamdctl0/stable,now 1.31-1+b2 amd64 [installed,automatic]
+libtext-charwidth-perl/stable,now 0.04-11+b4 amd64 [installed]
+libtext-iconv-perl/stable,now 1.7-8+b4 amd64 [installed]
+libtext-wrapi18n-perl/stable,now 0.06-10 all [installed]
+libthai-data/stable,now 0.1.29-2 all [installed,automatic]
+libthai0/stable,now 0.1.29-2+b1 amd64 [installed,automatic]
+libtheoradec1/stable,now 1.2.0~alpha1+dfsg-6 amd64 [installed,automatic]
+libtheoraenc1/stable,now 1.2.0~alpha1+dfsg-6 amd64 [installed,automatic]
+libtiff6/stable,stable-security,now 4.7.0-3+deb13u1 amd64 [installed,automatic]
+libtinfo6/stable,now 6.5+20250216-2 amd64 [installed]
+libtirpc-common/stable,now 1.3.6+ds-1 all [installed]
+libtirpc3t64/stable,now 1.3.6+ds-1 amd64 [installed]
+libtsan2/stable,now 14.2.0-19 amd64 [installed,automatic]
+libtss2-mu-4.0.1-0t64/stable,now 4.1.3-1.2 amd64 [installed,automatic]
+libtss2-tcti-device0t64/stable,now 4.1.3-1.2 amd64 [installed,automatic]
+libtwolame0/stable,now 0.4.0-2+b2 amd64 [installed,automatic]
+libubsan1/stable,now 14.2.0-19 amd64 [installed,automatic]
+libuchardet0/stable,now 0.0.8-1+b2 amd64 [installed,automatic]
+libudev1/stable,now 257.9-1~deb13u1 amd64 [installed]
+libunbound8/stable,stable-security,now 1.22.0-2+deb13u1 amd64 [installed,automatic]
+libunistring5/stable,now 1.3-2 amd64 [installed]
+libunwind8/stable,now 1.8.1-0.1 amd64 [installed,automatic]
+libusb-1.0-0/stable,now 2:1.0.28-1 amd64 [installed,automatic]
+libuuid1/stable,now 2.41-5 amd64 [installed]
+libuv1t64/stable,now 1.50.0-2 amd64 [installed,automatic]
+libva-drm2/stable,now 2.22.0-3 amd64 [installed,automatic]
+libva-x11-2/stable,now 2.22.0-3 amd64 [installed,automatic]
+libva2/stable,now 2.22.0-3 amd64 [installed,automatic]
+libvdpau1/stable,now 1.5-3+b1 amd64 [installed,automatic]
+libvisual-0.4-0/stable,now 0.4.2-2+b2 amd64 [installed,automatic]
+libvorbis0a/stable,now 1.3.7-3 amd64 [installed,automatic]
+libvorbisenc2/stable,now 1.3.7-3 amd64 [installed,automatic]
+libvorbisfile3/stable,now 1.3.7-3 amd64 [installed,automatic]
+libvpl2/stable,now 1:2.14.0-1+b1 amd64 [installed,automatic]
+libvpx9/stable,now 1.15.0-2.1 amd64 [installed,automatic]
+libvulkan1/stable,now 1.4.309.0-1 amd64 [installed,automatic]
+libwacom-common/stable,now 2.14.0-1 all [installed,automatic]
+libwacom9/stable,now 2.14.0-1 amd64 [installed,automatic]
+libwayland-client0/stable,now 1.23.1-3 amd64 [installed,automatic]
+libwayland-cursor0/stable,now 1.23.1-3 amd64 [installed,automatic]
+libwayland-egl1/stable,now 1.23.1-3 amd64 [installed,automatic]
+libwayland-server0/stable,now 1.23.1-3 amd64 [installed,automatic]
+libwebp7/stable,now 1.5.0-0.1 amd64 [installed,automatic]
+libwebpmux3/stable,now 1.5.0-0.1 amd64 [installed,automatic]
+libwebrtc-audio-processing-1-3/stable,now 1.3-3+b1 amd64 [installed,automatic]
+libwireplumber-0.5-0/stable,now 0.5.8-2 amd64 [installed,automatic]
+libx11-6/stable,now 2:1.8.12-1 amd64 [installed,automatic]
+libx11-data/stable,now 2:1.8.12-1 all [installed,automatic]
+libx11-dev/stable,now 2:1.8.12-1 amd64 [installed,automatic]
+libx11-xcb1/stable,now 2:1.8.12-1 amd64 [installed,automatic]
+libx264-164/stable,now 2:0.164.3108+git31e19f9-2+b1 amd64 [installed,automatic]
+libx265-215/stable,now 4.1-2 amd64 [installed,automatic]
+libxau-dev/stable,now 1:1.0.11-1 amd64 [installed,automatic]
+libxau6/stable,now 1:1.0.11-1 amd64 [installed,automatic]
+libxaw7/stable,now 2:1.0.16-1 amd64 [installed,automatic]
+libxcb-cursor0/stable,now 0.1.5-1 amd64 [installed]
+libxcb-dri2-0/stable,now 1.17.0-2+b1 amd64 [installed,automatic]
+libxcb-dri3-0/stable,now 1.17.0-2+b1 amd64 [installed,automatic]
+libxcb-glx0/stable,now 1.17.0-2+b1 amd64 [installed,automatic]
+libxcb-image0/stable,now 0.4.0-2+b2 amd64 [installed,automatic]
+libxcb-present0/stable,now 1.17.0-2+b1 amd64 [installed,automatic]
+libxcb-randr0/stable,now 1.17.0-2+b1 amd64 [installed,automatic]
+libxcb-render-util0/stable,now 0.3.10-1 amd64 [installed,automatic]
+libxcb-render0/stable,now 1.17.0-2+b1 amd64 [installed,automatic]
+libxcb-shm0/stable,now 1.17.0-2+b1 amd64 [installed,automatic]
+libxcb-sync1/stable,now 1.17.0-2+b1 amd64 [installed,automatic]
+libxcb-util1/stable,now 0.4.1-1 amd64 [installed,automatic]
+libxcb-xfixes0/stable,now 1.17.0-2+b1 amd64 [installed,automatic]
+libxcb-xkb1/stable,now 1.17.0-2+b1 amd64 [installed,automatic]
+libxcb1-dev/stable,now 1.17.0-2+b1 amd64 [installed,automatic]
+libxcb1/stable,now 1.17.0-2+b1 amd64 [installed,automatic]
+libxcomposite1/stable,now 1:0.4.6-1 amd64 [installed,automatic]
+libxcursor1/stable,now 1:1.2.3-1 amd64 [installed,automatic]
+libxcvt0/stable,now 0.1.3-1 amd64 [installed,automatic]
+libxdamage1/stable,now 1:1.1.6-1+b2 amd64 [installed,automatic]
+libxdmcp-dev/stable,now 1:1.1.5-1 amd64 [installed,automatic]
+libxdmcp6/stable,now 1:1.1.5-1 amd64 [installed,automatic]
+libxext6/stable,now 2:1.3.4-1+b3 amd64 [installed,automatic]
+libxfixes3/stable,now 1:6.0.0-2+b4 amd64 [installed,automatic]
+libxfont2/stable,now 1:2.0.6-1+b3 amd64 [installed,automatic]
+libxft2/stable,now 2.3.6-1+b4 amd64 [installed,automatic]
+libxi6/stable,now 2:1.8.2-1 amd64 [installed,automatic]
+libxinerama1/stable,now 2:1.1.4-3+b4 amd64 [installed,automatic]
+libxkbcommon-x11-0/stable,now 1.7.0-2 amd64 [installed,automatic]
+libxkbcommon0/stable,now 1.7.0-2 amd64 [installed,automatic]
+libxkbfile1/stable,now 1:1.1.0-1+b4 amd64 [installed,automatic]
+libxml++2.6-2v5/stable,now 2.42.3-2 amd64 [installed,automatic]
+libxml2/stable,now 2.12.7+dfsg+really2.9.14-2.1+deb13u2 amd64 [installed,automatic]
+libxmu6/stable,now 2:1.1.3-3+b4 amd64 [installed,automatic]
+libxmuu1/stable,now 2:1.1.3-3+b4 amd64 [installed,automatic]
+libxpm4/stable,now 1:3.5.17-1+b3 amd64 [installed,automatic]
+libxrandr2/stable,now 2:1.5.4-1+b3 amd64 [installed,automatic]
+libxrender1/stable,now 1:0.9.12-1 amd64 [installed,automatic]
+libxshmfence1/stable,now 1.3.3-1 amd64 [installed,automatic]
+libxss1/stable,now 1:1.2.3-1+b3 amd64 [installed,automatic]
+libxt6t64/stable,now 1:1.2.1-1.2+b2 amd64 [installed,automatic]
+libxtables12/stable,now 1.8.11-2 amd64 [installed]
+libxtst6/stable,now 2:1.2.5-1 amd64 [installed,automatic]
+libxvidcore4/stable,now 2:1.3.7-1+b2 amd64 [installed,automatic]
+libxvmc1/stable,now 2:1.0.12-2+b3 amd64 [installed,automatic]
+libxxf86vm1/stable,now 1:1.1.4-1+b4 amd64 [installed,automatic]
+libxxhash0/stable,now 0.8.3-2 amd64 [installed]
+libz3-4/stable,now 4.13.3-1 amd64 [installed,automatic]
+libzix-0-0/stable,now 0.6.2-1 amd64 [installed,automatic]
+libzstd1/stable,now 1.5.7+dfsg-1 amd64 [installed]
+libzvbi-common/stable,now 0.2.44-1 all [installed,automatic]
+libzvbi0t64/stable,now 0.2.44-1 amd64 [installed,automatic]
+linux-base/stable,now 4.12 all [installed,automatic]
+linux-image-6.12.63+deb13-amd64/stable,now 6.12.63-1 amd64 [installed,automatic]
+linux-image-amd64/stable,now 6.12.63-1 amd64 [installed,upgradable to: 6.12.69-1]
+linux-libc-dev/stable-security,now 6.12.69-1 all [installed,automatic]
+linux-sysctl-defaults/stable,now 4.12 all [installed]
+live-boot-doc/stable,now 1:20250815~deb13u1 all [installed,automatic]
+live-boot-initramfs-tools/stable,now 1:20250815~deb13u1 all [installed,automatic]
+live-boot/stable,now 1:20250815~deb13u1 all [installed]
+live-config-doc/stable,now 11.0.5 all [installed,automatic]
+live-config-systemd/stable,now 11.0.5 all [installed,automatic]
+live-config/stable,now 11.0.5 all [installed]
+live-tools/stable,now 1:20240525 all [installed,automatic]
+locales/stable,now 2.41-12+deb13u1 all [installed,automatic]
+login.defs/stable,now 1:4.17.4-2 all [installed]
+login/stable,now 1:4.16.0-2+really2.41-5 amd64 [installed]
+logrotate/stable,now 3.22.0-1 amd64 [installed]
+logsave/stable,now 1.47.2-3+b7 amd64 [installed]
+make/stable,now 4.4.1-2 amd64 [installed]
+man-db/stable,now 2.13.1-1 amd64 [installed,automatic]
+manpages-dev/stable,now 6.9.1-1 all [installed,automatic]
+manpages/stable,now 6.9.1-1 all [installed,automatic]
+mawk/stable,now 1.3.4.20250131-1 amd64 [installed]
+media-types/stable,now 13.0.0 all [installed,automatic]
+mesa-common-dev/stable,now 25.0.7-2 amd64 [installed]
+mesa-drm-shim/stable,now 25.0.7-2 amd64 [installed]
+mesa-libgallium/stable,now 25.0.7-2 amd64 [installed]
+mesa-opencl-icd/stable,now 25.0.7-2 amd64 [installed]
+mesa-utils-bin/stable,now 9.0.0-2+b2 amd64 [installed]
+mesa-utils/stable,now 9.0.0-2+b2 amd64 [installed]
+mesa-va-drivers/stable,now 25.0.7-2 amd64 [installed]
+mesa-vdpau-drivers/stable,now 25.0.7-2 amd64 [installed]
+mesa-vulkan-drivers/stable,now 25.0.7-2 amd64 [installed]
+modemmanager/stable,now 1.24.0-1+deb13u1 amd64 [installed,automatic]
+mokutil/stable,now 0.7.2-1 amd64 [installed,automatic]
+mount/stable,now 2.41-5 amd64 [installed]
+mtools/stable,now 4.0.48-1 amd64 [installed]
+nano/stable,now 8.4-1 amd64 [installed]
+ncurses-base/stable,now 6.5+20250216-2 all [installed]
+ncurses-bin/stable,now 6.5+20250216-2 amd64 [installed]
+netbase/stable,now 6.5 all [installed]
+network-manager-l10n/stable,now 1.52.1-1 all [installed,automatic]
+network-manager/stable,now 1.52.1-1 amd64 [installed]
+nftables/stable,now 1.1.3-1 amd64 [installed]
+ocl-icd-libopencl1/stable,now 2.3.3-1 amd64 [installed,automatic]
+openssh-client/stable,now 1:10.0p1-7 amd64 [installed,automatic]
+openssl-provider-legacy/stable,now 3.5.4-1~deb13u1 amd64 [installed,upgradable to: 3.5.4-1~deb13u2]
+openssl/stable,now 3.5.4-1~deb13u1 amd64 [installed,upgradable to: 3.5.4-1~deb13u2]
+os-prober/stable,now 1.83 amd64 [installed,automatic]
+pango1.0-tools/stable,now 1.56.3-1 amd64 [installed]
+parted/stable,now 3.6-5 amd64 [installed]
+passwd/stable,now 1:4.17.4-2 amd64 [installed]
+patch/stable,now 2.8-2 amd64 [installed,automatic]
+pci.ids/stable,now 0.0~2025.06.09-1 all [installed,automatic]
+pciutils/stable,now 1:3.13.0-2 amd64 [installed,automatic]
+perl-base/stable,now 5.40.1-6 amd64 [installed]
+perl-modules-5.40/stable,now 5.40.1-6 all [installed,automatic]
+perl/stable,now 5.40.1-6 amd64 [installed,automatic]
+pinentry-curses/stable,now 1.3.1-2 amd64 [installed,automatic]
+pinentry-gnome3/stable,now 1.3.1-2 amd64 [installed,automatic]
+pipewire-bin/stable,now 1.4.2-1 amd64 [installed,automatic]
+pipewire-pulse/stable,now 1.4.2-1 amd64 [installed,automatic]
+pipewire/stable,now 1.4.2-1 amd64 [installed,automatic]
+plymouth-label/stable,now 24.004.60-5 amd64 [installed,automatic]
+plymouth-themes/stable,now 24.004.60-5 amd64 [installed]
+plymouth/stable,now 24.004.60-5 amd64 [installed]
+polkitd/stable,now 126-2 amd64 [installed,automatic]
+ppp/stable,now 2.5.2-1+1 amd64 [installed,automatic]
+procps/stable,now 2:4.0.4-9 amd64 [installed]
+psmisc/stable,now 23.7-2 amd64 [installed,automatic]
+publicsuffix/stable,now 20250328.1952-0.1 all [installed,automatic]
+pulseaudio-utils/stable,now 17.0+dfsg1-2+b1 amd64 [installed,automatic]
+python3-minimal/stable,now 3.13.5-1 amd64 [installed,automatic]
+python3.13-minimal/stable,now 3.13.5-2 amd64 [installed,automatic]
+python3.13/stable,now 3.13.5-2 amd64 [installed,automatic]
+python3/stable,now 3.13.5-1 amd64 [installed]
+readline-common/stable,now 8.2-6 all [installed]
+rpcsvc-proto/stable,now 1.4.3-1 amd64 [installed,automatic]
+rsync/stable,now 3.4.1+ds1-5+deb13u1 amd64 [installed]
+rtkit/stable,now 0.13-5.1 amd64 [installed,automatic]
+sed/stable,now 4.9-2 amd64 [installed]
+sensible-utils/stable,now 0.0.25 all [installed]
+sgml-base/stable,now 1.31+nmu1 all [installed,automatic]
+shared-mime-info/stable,now 2.4-5+b2 amd64 [installed,automatic]
+shim-helpers-amd64-signed/stable,now 1+15.8+1 amd64 [installed,automatic]
+shim-signed-common/stable,now 1.47+15.8-1 all [installed,automatic]
+shim-signed/stable,now 1.47+15.8-1 amd64 [installed,automatic]
+shim-unsigned/stable,now 15.8-1 amd64 [installed,automatic]
+sound-theme-freedesktop/stable,now 0.8-6~deb13u1 all [installed,automatic]
+squashfs-tools/stable,now 1:4.6.1-1 amd64 [installed]
+sqv/stable,now 1.3.0-3+b2 amd64 [installed]
+sudo/stable,now 1.9.16p2-3 amd64 [installed,automatic]
+systemd-sysv/stable,now 257.9-1~deb13u1 amd64 [installed]
+systemd/stable,now 257.9-1~deb13u1 amd64 [installed]
+sysvinit-utils/stable,now 3.14-4 amd64 [installed]
+tar/stable,now 1.35+dfsg-3.1 amd64 [installed]
+tpm-udev/stable,now 0.6+nmu1 all [installed,automatic]
+tzdata/stable,now 2025b-4+deb13u1 all [installed]
+ucf/stable,now 3.0052 all [installed,automatic]
+udev/stable,now 257.9-1~deb13u1 amd64 [installed]
+usb-modeswitch-data/stable,now 20191128-7 all [installed,automatic]
+usb-modeswitch/stable,now 2.6.1-4+b2 amd64 [installed,automatic]
+user-setup/stable,now 1.107 all [installed,automatic]
+util-linux/stable,now 2.41-5 amd64 [installed]
+uuid-runtime/stable,now 2.41-5 amd64 [installed,automatic]
+vim-common/stable,now 2:9.1.1230-2 all [installed]
+vim-tiny/stable,now 2:9.1.1230-2 amd64 [installed]
+wget/stable,now 1.25.0-2 amd64 [installed]
+whiptail/stable,now 0.52.25-1 amd64 [installed]
+wireless-regdb/stable,now 2025.07.10-1 all [installed,automatic]
+wireplumber/stable,now 0.5.8-2 amd64 [installed,automatic]
+wpasupplicant/stable,now 2:2.10-24 amd64 [installed,automatic]
+x11-common/stable,now 1:7.7+24+deb13u1 all [installed,automatic]
+x11-xkb-utils/stable,now 7.7+9 amd64 [installed,automatic]
+x11proto-dev/stable,now 2024.1-1 all [installed,automatic]
+xauth/stable,now 1:1.1.2-1.1 amd64 [installed,automatic]
+xcvt/stable,now 0.1.3-1 amd64 [installed,automatic]
+xdg-user-dirs/stable,now 0.18-2 amd64 [installed,automatic]
+xfonts-base/stable,now 1:1.0.5+nmu1 all [installed,automatic]
+xfonts-encodings/stable,now 1:1.0.4-2.2 all [installed,automatic]
+xfonts-utils/stable,now 1:7.7+7 amd64 [installed,automatic]
+xkb-data/stable,now 2.42-1 all [installed,automatic]
+xml-core/stable,now 0.19 all [installed,automatic]
+xorg-sgml-doctools/stable,now 1:1.11-1.1 all [installed,automatic]
+xorriso/stable,now 1.5.6-1.2+b1 amd64 [installed]
+xserver-common/stable,stable-security,now 2:21.1.16-1.3+deb13u1 all [installed,automatic]
+xserver-xorg-core/stable,stable-security,now 2:21.1.16-1.3+deb13u1 amd64 [installed,automatic]
+xserver-xorg-input-all/stable,now 1:7.7+24+deb13u1 amd64 [installed,automatic]
+xserver-xorg-input-libinput/stable,now 1.5.0-1 amd64 [installed,automatic]
+xserver-xorg-input-wacom/stable,now 1.2.3-1 amd64 [installed,automatic]
+xserver-xorg-legacy/stable,stable-security,now 2:21.1.16-1.3+deb13u1 amd64 [installed,automatic]
+xserver-xorg-video-amdgpu/stable,now 23.0.0-1 amd64 [installed]
+xserver-xorg-video-intel/stable,now 2:2.99.917+git20210115-1 amd64 [installed]
+xserver-xorg/stable,now 1:7.7+24+deb13u1 amd64 [installed]
+xtrans-dev/stable,now 1.4.0-1 all [installed,automatic]
+xz-utils/stable,now 5.8.1-1 amd64 [installed,automatic]
+zlib1g/stable,now 1:1.3.dfsg+really1.3.1-1+b1 amd64 [installed]
+zstd/stable,now 1.5.7+dfsg-1 amd64 [installed]
