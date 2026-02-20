@@ -1,5 +1,4 @@
 # This is the nescesarry packages for NextFerretOS
-Listing...
 adduser/stable,now 3.152 all [installed]
 adwaita-icon-theme/stable,now 48.1-1 all [installed,automatic]
 alsa-topology-conf/stable,now 1.2.5.1-3 all [installed,automatic]
