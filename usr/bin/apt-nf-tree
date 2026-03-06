@@ -1,0 +1,384 @@
+#!/usr/bin/env python3
+import os
+import sys
+import subprocess
+import urllib.request
+import re
+import shutil
+import time
+from datetime import datetime
+
+APT_NF_PATH = "/usr/share/apt-nf-tree/apt"
+TREE_ROOT = "/nf-tree/apt-nf-tree/root"
+BASE_URL = "https://nextferret.github.io"
+VERSION = "1.3r2"
+
+apt_bin = APT_NF_PATH if os.path.exists(APT_NF_PATH) and os.access(APT_NF_PATH, os.X_OK) else "apt"
+
+def mount_pseudo_fs():
+    subprocess.run(["mount", "--bind", "/dev",       f"{TREE_ROOT}/dev"],     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.run(["mount", "--bind", "/dev/pts",   f"{TREE_ROOT}/dev/pts"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.run(["mount", "--bind", "/proc",      f"{TREE_ROOT}/proc"],    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.run(["mount", "--bind", "/sys",       f"{TREE_ROOT}/sys"],     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+def umount_pseudo_fs():
+    for p in ["/dev/pts", "/dev", "/proc", "/sys"]:
+        subprocess.run(["umount", "-l", f"{TREE_ROOT}{p}"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    time.sleep(0.5)
+
+def manage_sandbox(action):
+    if action == "create":
+        if os.path.exists(TREE_ROOT):
+            umount_pseudo_fs()
+            subprocess.run(["btrfs", "subvolume", "delete", "-c", TREE_ROOT], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        os.makedirs(os.path.dirname(TREE_ROOT), exist_ok=True)
+        subprocess.run(["btrfs", "subvolume", "snapshot", "/", TREE_ROOT], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    elif action == "delete":
+        if os.path.exists(TREE_ROOT):
+            umount_pseudo_fs()
+            subprocess.run(["btrfs", "subvolume", "delete", "-c", TREE_ROOT], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+def show_rain_warning():
+    print("\n" + "="*70)
+    print("  ALERT: if it is raining: SHUT DOWN YOUR COMPUTER NOW")
+    print("  IF IT'S A LAPTOP → UNPLUG IT IMMEDIATELY!")
+    print("  ! Otherwise your hardware can be affected by rain !")
+    print("="*70 + "\n")
+
+def ask_confirm(prompt="Apply this transaction to the REAL system? [y/N]: "):
+    sys.stdout.flush()
+    while True:
+        ans = input(prompt).strip().lower()
+        if ans in ("y", "yes"):
+            return True
+        if ans in ("n", "no", ""):
+            return False
+        print("Please answer y or n.")
+
+def is_package_already_installed(pkg_name):
+    try:
+        result = subprocess.run(["dpkg-query", "--show", "--showformat=${Status}", pkg_name],
+                                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, check=False)
+        return "install ok installed" in result.stdout.strip()
+    except:
+        return False
+
+def cleanup_old_snapshots():
+    try:
+        out = subprocess.run(["nf-tree", "list"], capture_output=True, text=True).stdout
+        snapshots = [line.strip() for line in out.splitlines() if line.strip() and not line.startswith("-")]
+        date_map = {}
+        for snap in snapshots:
+            match = re.search(r'(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})', snap)
+            if match:
+                try:
+                    dt = datetime.strptime(match.group(1), "%Y-%m-%d_%H-%M-%S")
+                    date_map[snap] = dt
+                except:
+                    date_map[snap] = datetime.min
+            else:
+                date_map[snap] = datetime.min
+        sorted_snaps = sorted(date_map.items(), key=lambda x: x[1], reverse=True)
+        to_keep = []
+        to_delete = []
+        keep_count = 0
+        pre_count = 0
+        post_count = 0
+        for snap, _ in sorted_snaps:
+            if keep_count < 12:
+                to_keep.append(snap)
+                keep_count += 1
+                if "host-pre" in snap:
+                    pre_count += 1
+                if "host-post" in snap:
+                    post_count += 1
+            else:
+                if "host-pre" in snap and pre_count < 3:
+                    to_keep.append(snap)
+                    pre_count += 1
+                elif "host-post" in snap and post_count < 3:
+                    to_keep.append(snap)
+                    post_count += 1
+                else:
+                    to_delete.append(snap)
+        for snap in set(to_delete):
+            subprocess.run(["nf-tree", "remove", snap], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if len(to_delete) > 0:
+            print(f"→ Cleaned {len(to_delete)} old snapshots")
+    except:
+        pass
+
+def run_direct(args):
+    show_rain_warning()
+    print("\n" + "="*80)
+    print("  !!! --FORCE MODE ACTIVATED !!!")
+    print("  Running DIRECTLY on host WITHOUT sandbox test.")
+    print("  This may result in an unstable or broken system!")
+    print("  Use at your own risk!")
+    print("="*80 + "\n")
+
+    if not ask_confirm("Continue with --force? [y/N]: "):
+        print("Cancelled by user.")
+        sys.exit(0)
+
+    print(">> Host: creating pre-installation snapshot ...")
+    subprocess.run(["nf-tree", "create", "apt-host-pre"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    print(">> Pre-snapshot created")
+
+    print(">> Applying to real system ...")
+    real_args = list(args)
+    if "-y" not in real_args and "--yes" not in real_args:
+        real_args.append("-y")
+    real = subprocess.run([apt_bin] + real_args)
+    if real.returncode != 0:
+        print(">> Real apt FAILED!")
+        sys.exit(1)
+
+    print(">> Host: creating post-installation snapshot ...")
+    subprocess.run(["nf-tree", "create", "apt-host-post"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    print(">> Post-snapshot created")
+
+    print(">> Done. Cleaning old snapshots...")
+    cleanup_old_snapshots()
+
+def run_sandboxed(args):
+    show_rain_warning()
+
+    if args and args[0] == "install" and len(args) > 1:
+        packages = [a for a in args[1:] if not a.startswith("-") and not a.startswith("/") and not a.endswith(".deb")]
+        if packages:
+            already = [p for p in packages if is_package_already_installed(p)]
+            if already and len(already) == len(packages):
+                print(f"Package(s) {' '.join(already)} already installed → skipping")
+                return
+            if already:
+                print(f"Note: {' '.join(already)} already installed (apt will skip)")
+        deb_list = []
+        for arg in args[1:]:
+            if arg.endswith(".deb") and os.path.isfile(arg):
+                try:
+                    pkg = subprocess.run(["dpkg-deb", "--show", "--showformat=${Package}", arg],
+                                         stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, check=False).stdout.strip()
+                    if pkg:
+                        deb_list.append((arg, pkg))
+                except:
+                    pass
+        if deb_list:
+            already_deb = [pkg for _, pkg in deb_list if is_package_already_installed(pkg)]
+            if already_deb and len(already_deb) == len(deb_list):
+                print(f"Package(s) {' '.join(already_deb)} already installed → skipping")
+                return
+            if already_deb:
+                print(f"Note: {' '.join(already_deb)} already installed (apt will skip)")
+
+    deb_map = {}
+    for arg in args:
+        if arg.endswith(".deb") and os.path.isfile(arg):
+            deb_map[arg] = os.path.basename(arg)
+
+    manage_sandbox("create")
+    mount_pseudo_fs()
+
+    for host_path, base in deb_map.items():
+        sandbox_path = os.path.join(TREE_ROOT, "tmp", base)
+        shutil.copy2(host_path, sandbox_path)
+
+    sandbox_args = list(args)
+    for host_path, base in deb_map.items():
+        sandbox_args = [f"/tmp/{base}" if a == host_path else a for a in sandbox_args]
+
+    if "-y" not in sandbox_args and "--yes" not in sandbox_args:
+        sandbox_args.append("-y")
+
+    chroot_cmd = ["chroot", TREE_ROOT, apt_bin] + sandbox_args
+
+    res = subprocess.run(chroot_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    umount_pseudo_fs()
+
+    if res.returncode != 0:
+        print(">> Sandbox test: FAILED → no changes applied")
+        if res.stderr:
+            print(res.stderr.decode(errors="replace").strip())
+        manage_sandbox("delete")
+        return
+
+    print(">> Sandbox test: SUCCESS")
+    print(">> Transaction appears safe.")
+
+    if not ask_confirm():
+        print(">> Cancelled by user → no changes applied")
+        manage_sandbox("delete")
+        return
+
+    print(">> Host: creating pre-installation snapshot ...")
+    subprocess.run(["nf-tree", "create", "apt-host-pre"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    print(">> Pre-snapshot created")
+
+    print(">> Applying to real system ...")
+    real_args = list(args)
+    if "-y" not in real_args and "--yes" not in real_args:
+        real_args.append("-y")
+    real = subprocess.run([apt_bin] + real_args)
+    if real.returncode != 0:
+        print(">> Real apt FAILED!")
+        manage_sandbox("delete")
+        return
+
+    print(">> Host: creating post-installation snapshot ...")
+    subprocess.run(["nf-tree", "create", "apt-host-post"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    print(">> Post-snapshot created")
+
+    manage_sandbox("delete")
+    print(">> Done. Cleaning old snapshots...")
+    cleanup_old_snapshots()
+
+def run_update():
+    subprocess.run([apt_bin, "update"])
+
+def fetch(path):
+    try:
+        req = urllib.request.Request(f"{BASE_URL}/{path}", headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            content = r.read().decode('utf-8').strip()
+            if len(content) < 20:
+                return ""
+            return content
+    except:
+        return ""
+
+def get_version(content):
+    m = re.search(r'^VERSION_ID="?([^"\n]+)"?', content, re.MULTILINE)
+    try: return float(m.group(1)) if m else 0.0
+    except: return 0.0
+
+def process_packages_to_install():
+    content = fetch("packages-to-install")
+    if not content: return
+    tmp = "/tmp/nf-tree-debs"
+    os.makedirs(tmp, exist_ok=True)
+    for line in content.splitlines():
+        if "→" not in line: continue
+        pkg, url = [x.strip() for x in line.split("→", 1)]
+        if url.startswith("nextferret.github.io"): url = "https://" + url
+        if not url.endswith(".deb"): continue
+        if is_package_already_installed(pkg):
+            print(f"Package '{pkg}' already installed → skipping")
+            continue
+        print(f"Fetching {pkg} …")
+        path = os.path.join(tmp, f"{pkg}.deb")
+        try:
+            urllib.request.urlretrieve(url, path)
+            run_sandboxed(["install", path])
+        except Exception as e:
+            print(f"→ failed {pkg}: {e}")
+
+def system_upgrade():
+    show_rain_warning()
+
+    if os.path.exists("/etc/apt/sources.list"):
+        shutil.copy2("/etc/apt/sources.list", "/etc/apt/sources.list.nf-backup")
+    if os.path.exists("/etc/os-release"):
+        shutil.copy2("/etc/os-release", "/etc/os-release.nf-backup")
+
+    local_os = open("/etc/os-release").read() if os.path.exists("/etc/os-release") else ""
+
+    remote_os = fetch("etc/os-release")
+    remote_codename = fetch("debian_codename").strip()
+
+    if remote_codename and len(remote_codename) > 2:
+        m = re.search(r'^VERSION_CODENAME="?([^"\n]+)"?', local_os, re.M)
+        local_codename = m.group(1) if m else ""
+        if remote_codename != local_codename or not local_codename:
+            sources = f"""deb http://deb.debian.org/debian {remote_codename} main contrib non-free non-free-firmware
+deb http://deb.debian.org/debian {remote_codename}-updates main contrib non-free non-free-firmware
+deb http://security.debian.org/debian-security {remote_codename}-security main contrib non-free non-free-firmware
+"""
+            open("/etc/apt/sources.list", "w").write(sources)
+            print(f"→ sources.list updated to {remote_codename}")
+
+    if remote_os and "VERSION_ID" in remote_os:
+        open("/etc/os-release", "w").write(remote_os)
+
+    process_packages_to_install()
+
+    pkgs_remove = [p for p in fetch("packages-to-remove").split() if p]
+    if pkgs_remove:
+        print(f"Packages to remove: {' '.join(pkgs_remove)}")
+        if ask_confirm("Remove recommended packages? [y/N]: "):
+            run_sandboxed(["remove"] + pkgs_remove)
+        else:
+            print("→ Removal skipped")
+
+    print("Running full system upgrade …")
+    run_sandboxed(["full-upgrade"])
+
+def print_help():
+    print("Usage: apt-nf-tree <command> [options] [packages...] [--force]")
+    print("")
+    print("Allowed commands:")
+    print("  install      [packages]")
+    print("  remove       [packages]")
+    print("  autoremove")
+    print("  update")
+    print("  upgrade")
+    print("  upgrade --system")
+    print("  --system     (shortcut for upgrade --system)")
+    print("  -v")
+    print("")
+    print("--force : run directly on host without sandbox (may break system)")
+
+def main():
+    if len(sys.argv) < 2:
+        print_help()
+        sys.exit(0)
+
+    args = sys.argv[1:]
+    force_mode = "--force" in args
+    if force_mode:
+        args = [a for a in args if a != "--force"]
+
+    if not args:
+        print_help()
+        sys.exit(0)
+
+    first_arg = args[0]
+
+    if first_arg in ("-v", "--v"):
+        print(VERSION)
+        sys.exit(0)
+
+    if first_arg == "--system":
+        if os.geteuid() != 0:
+            print("Need root.")
+            sys.exit(1)
+        system_upgrade()
+        sys.exit(0)
+
+    cmd = first_arg
+    cmd_args = args[1:] if len(args) > 1 else []
+
+    if cmd not in ("install", "remove", "autoremove", "update", "upgrade"):
+        print_help()
+        sys.exit(1)
+
+    if os.geteuid() != 0:
+        print("Need root.")
+        sys.exit(1)
+
+    if cmd == "upgrade" and "--system" in args:
+        system_upgrade()
+    elif force_mode:
+        if cmd == "autoremove":
+            run_direct(["autoremove"])
+        else:
+            run_direct([cmd] + cmd_args)
+    elif cmd == "update":
+        run_update()
+    else:
+        if cmd == "autoremove":
+            run_sandboxed(["autoremove"])
+        else:
+            run_sandboxed([cmd] + cmd_args)
+
+if __name__ == "__main__":
+    main()
