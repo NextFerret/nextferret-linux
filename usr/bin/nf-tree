@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 import os
 import sys
 import subprocess
@@ -11,6 +11,7 @@ AUTO_DIR = os.path.join(SNAPSHOT_BASE, "auto")
 MANUAL_DIR = os.path.join(SNAPSHOT_BASE, "manual")
 ROOT_SOURCE = "/"
 HOME_SOURCE = "/home"
+SERVICE_PATH = "/etc/systemd/system/nf-tree.service"
 
 def setup_dirs():
     if not os.path.exists(AUTO_DIR):
@@ -32,22 +33,37 @@ def run_cmd(command):
         return False
 
 def update_grub():
-    print("Updating GRUB...")
+    print(">> Updating GRUB config (this may take a few seconds)...", flush=True)
     subprocess.run(["update-grub"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+    print(">> GRUB updated.", flush=True)
 
-def check_changes(path, last_snapshot_time):
-    exclude = {'proc', 'sys', 'dev', 'run', 'tmp', 'var', 'mnt', 'media', 'nf-tree', '.snapshots', 'swapfile'}
-    for root, dirs, files in os.walk(path):
-        dirs[:] = [d for d in dirs if d not in exclude]
-        for file in files:
-            try:
-                full_path = os.path.join(root, file)
-                if os.path.islink(full_path):
-                    continue
-                if os.path.getmtime(full_path) > last_snapshot_time:
-                    return True
-            except OSError:
-                continue
+def check_changes(path, last_snapshot_time, is_root_path=False):
+    root_exclude = {'proc', 'sys', 'dev', 'run', 'tmp', 'var', 'mnt', 'media', 'boot'}
+    general_exclude = {'nf-tree', '.snapshots', 'swapfile', '.cache', 'Downloads', 'node_modules', '.local'}
+    
+    dirs_to_scan = [path]
+    
+    while dirs_to_scan:
+        current_dir = dirs_to_scan.pop()
+        try:
+            with os.scandir(current_dir) as it:
+                for entry in it:
+                    if entry.is_symlink():
+                        continue
+                        
+                    if entry.name in general_exclude:
+                        continue
+                        
+                    if is_root_path and current_dir == path and entry.name in root_exclude:
+                        continue
+                        
+                    if entry.is_dir(follow_symlinks=False):
+                        dirs_to_scan.append(entry.path)
+                    elif entry.is_file(follow_symlinks=False):
+                        if entry.stat(follow_symlinks=False).st_mtime > last_snapshot_time:
+                            return True
+        except OSError:
+            continue
     return False
 
 def toggle_swap(active):
@@ -64,7 +80,7 @@ def cleanup_retention(base_name):
     try:
         snapshots = [s for s in os.listdir(AUTO_DIR) if s.startswith(base_name)]
         snapshots.sort()
-
+        
         if len(snapshots) > 6:
             to_remove = snapshots[:-6]
             for snap in to_remove:
@@ -76,34 +92,33 @@ def cleanup_retention(base_name):
 
 def create_snapshot(source, name, is_auto=False):
     setup_dirs()
-
+    
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     target_name = f"{name}-{timestamp}"
-
+    
     target_dir = AUTO_DIR if is_auto else MANUAL_DIR
     target_path = os.path.join(target_dir, target_name)
 
     if os.path.exists(target_path):
         if not is_auto:
             print(f"Error: Snapshot {target_name} already exists.")
-            return
-
-    subprocess.run(["sync"], check=False)
+        return False
 
     is_root = (source == ROOT_SOURCE)
-
+    
     if is_root:
         toggle_swap(False)
 
     try:
         cmd = ["btrfs", "subvolume", "snapshot", source, target_path]
         if run_cmd(cmd):
-            print(f"Created: {target_path}")
+            print(f"Created: {target_path}", flush=True)
             if is_auto:
                 cleanup_retention(name)
-            update_grub()
+            return True
         else:
-            print(f"Failed: {target_name}")
+            print(f"Failed: {target_name}", flush=True)
+            return False
     finally:
         if is_root:
             toggle_swap(True)
@@ -111,38 +126,107 @@ def create_snapshot(source, name, is_auto=False):
 def remove_snapshot(name):
     path_auto = os.path.join(AUTO_DIR, name)
     path_manual = os.path.join(MANUAL_DIR, name)
-
+    
     target_path = None
     if os.path.exists(path_manual):
         target_path = path_manual
     elif os.path.exists(path_auto):
         target_path = path_auto
-
+    
     if target_path:
         cmd = ["btrfs", "subvolume", "delete", target_path]
         if run_cmd(cmd):
-            print(f"Removed: {target_path}")
-            update_grub()
+            print(f"Removed: {target_path}", flush=True)
+            return True
         else:
-            print(f"Error removing: {target_path}")
+            print(f"Error removing: {target_path}", flush=True)
+            return False
     else:
         print(f"Error: Snapshot {name} not found in auto or manual directories.")
+        return False
+
+def list_snapshots():
+    setup_dirs()
+    print(f"\n--- Manual Snapshots ({MANUAL_DIR}) ---")
+    if os.path.exists(MANUAL_DIR):
+        items = sorted(os.listdir(MANUAL_DIR))
+        if items:
+            for snap in items:
+                print(f"  {snap}")
+        else:
+            print("  (None)")
+            
+    print(f"\n--- Auto Snapshots ({AUTO_DIR}) ---")
+    if os.path.exists(AUTO_DIR):
+        items = sorted(os.listdir(AUTO_DIR))
+        if items:
+            for snap in items:
+                print(f"  {snap}")
+        else:
+            print("  (None)")
+    print("")
+
+def ensure_systemd_service():
+    if os.path.exists(SERVICE_PATH):
+        return False
+    
+    print("Systemd service not found. Creating...")
+    script_path = os.path.abspath(sys.argv[0])
+    
+    content = f"""[Unit]
+Description=NF-Tree Snapshot Daemon
+After=local-fs.target time-sync.target
+
+[Service]
+Type=simple
+ExecStart={sys.executable} {script_path} start-daemon
+Restart=always
+RestartSec=60
+User=root
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
+"""
+    try:
+        with open(SERVICE_PATH, "w") as f:
+            f.write(content)
+        
+        subprocess.run(["systemctl", "daemon-reload"], check=False)
+        subprocess.run(["systemctl", "enable", "--now", "nf-tree.service"], check=False)
+        print(f"Service created and started at {SERVICE_PATH}")
+        return True
+    except Exception as e:
+        print(f"Failed to create systemd service: {e}")
+        return False
 
 def daemon_loop():
     print("NF-Tree Daemon started...")
     last_run = time.time()
-
+    
     while True:
         current_time = time.time()
-
-        if check_changes(HOME_SOURCE, last_run):
-            create_snapshot(HOME_SOURCE, "home-auto", is_auto=True)
-
-        if check_changes(ROOT_SOURCE, last_run):
-            create_snapshot(ROOT_SOURCE, "root-auto", is_auto=True)
+        
+        home_changed = check_changes(HOME_SOURCE, last_run, is_root_path=False)
+        root_changed = check_changes(ROOT_SOURCE, last_run, is_root_path=True)
+        
+        if home_changed or root_changed:
+            subprocess.run(["sync"], check=False)
+            grub_needs_update = False
+            
+            if home_changed:
+                if create_snapshot(HOME_SOURCE, "home-auto", is_auto=True):
+                    grub_needs_update = True
+            
+            if root_changed:
+                if create_snapshot(ROOT_SOURCE, "root-auto", is_auto=True):
+                    grub_needs_update = True
+            
+            if grub_needs_update:
+                update_grub()
 
         last_run = current_time
-        time.sleep(10800)
+        time.sleep(10800) 
 
 def main():
     parser = argparse.ArgumentParser(description="NF-Tree Snapshot Manager")
@@ -153,20 +237,32 @@ def main():
 
     remove_parser = subparsers.add_parser("remove")
     remove_parser.add_argument("name", help="Full snapshot folder name to remove")
-
-    daemon_parser = subparsers.add_parser("start-daemon")
-
+    
+    subparsers.add_parser("list")
+    subparsers.add_parser("start-daemon")
+    
     args = parser.parse_args()
 
     if args.command == "create":
         is_auto_snapshot = args.name.startswith("apt") or args.name == "auto"
-        create_snapshot(ROOT_SOURCE, f"root-{args.name}", is_auto=is_auto_snapshot)
-        create_snapshot(HOME_SOURCE, f"home-{args.name}", is_auto=is_auto_snapshot)
-
+        
+        res1 = create_snapshot(ROOT_SOURCE, f"root-{args.name}", is_auto=is_auto_snapshot)
+        res2 = create_snapshot(HOME_SOURCE, f"home-{args.name}", is_auto=is_auto_snapshot)
+        
+        if res1 or res2:
+            update_grub()
+    
     elif args.command == "remove":
-        remove_snapshot(args.name)
+        if remove_snapshot(args.name):
+            update_grub()
+        
+    elif args.command == "list":
+        list_snapshots()
 
     elif args.command == "start-daemon":
+        if ensure_systemd_service():
+            sys.exit(0)
+        
         try:
             daemon_loop()
         except KeyboardInterrupt:
