@@ -5,96 +5,413 @@ import sys
 import subprocess
 import json
 import shutil
+import socket
+import urllib.request
 import time
-import getpass
+from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
+                             QHBoxLayout, QLabel, QPushButton, QComboBox, 
+                             QLineEdit, QCheckBox, QStackedWidget, QMessageBox, 
+                             QTextEdit, QListWidget, QListWidgetItem, QFrame, 
+                             QSizePolicy, QGraphicsDropShadowEffect, QProgressBar)
+from PyQt6.QtGui import QIcon, QPixmap, QColor
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
+
+STYLES = """
+QMainWindow {
+    background-color: #f8fafc;
+}
+QWidget {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+}
+QListWidget {
+    background-color: #0f172a;
+    border: none;
+    outline: none;
+    padding-top: 35px;
+}
+QListWidget::item {
+    color: #94a3b8;
+    padding: 18px 24px;
+    border-left: 4px solid transparent;
+    font-weight: 600;
+    font-size: 15px;
+}
+QListWidget::item:selected {
+    background-color: #1e293b;
+    color: #ffffff;
+    border-left: 4px solid #3b82f6;
+}
+QListWidget::item:hover:!selected {
+    background-color: #1e293b;
+    color: #e2e8f0;
+}
+QLabel {
+    color: #1e293b;
+}
+QLabel[heading="true"] {
+    font-size: 36px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+}
+QLabel[subheading="true"] {
+    font-size: 16px;
+    color: #64748b;
+    margin-bottom: 30px;
+    font-weight: 400;
+}
+QPushButton {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 28px;
+    color: #475569;
+    font-weight: 600;
+    font-size: 15px;
+}
+QPushButton:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+QPushButton:disabled {
+    background-color: #f8fafc;
+    color: #cbd5e1;
+    border-color: #e2e8f0;
+}
+QPushButton[primary="true"] {
+    background-color: #3b82f6;
+    border: none;
+    color: white;
+}
+QPushButton[primary="true"]:hover {
+    background-color: #2563eb;
+}
+QLineEdit, QComboBox {
+    padding: 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    background-color: white;
+    font-size: 15px;
+    color: #1e293b;
+    selection-background-color: #3b82f6;
+}
+QLineEdit:focus, QComboBox:focus {
+    border: 1.5px solid #3b82f6;
+    outline: none;
+    background-color: #f8fafc;
+}
+QComboBox::drop-down {
+    border: none;
+    padding-right: 15px;
+}
+QFrame[card="true"] {
+    background-color: white;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+}
+QFrame[alert="warning"] {
+    background-color: #fef3c7;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+}
+QLabel[alert-text="warning"] {
+    color: #92400e;
+    font-weight: 600;
+}
+QFrame[alert="danger"] {
+    background-color: #fee2e2;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+}
+QLabel[alert-text="danger"] {
+    color: #991b1b;
+    font-weight: 600;
+}
+QTextEdit[log="true"] {
+    background-color: #0f172a;
+    color: #4ade80;
+    font-family: 'Consolas', 'Monaco', monospace;
+    border-radius: 10px;
+    border: none;
+    padding: 15px;
+    font-size: 13px;
+}
+QProgressBar {
+    border: none;
+    background-color: #e2e8f0;
+    border-radius: 6px;
+    height: 12px;
+    text-align: center;
+}
+QProgressBar::chunk {
+    background-color: #3b82f6;
+    border-radius: 6px;
+}
+"""
 
 TEXT = {
     "en": {
-        "header": "NextFerretOS 1.3 (Quantum Ferret) Installer",
-        "sel_lang": "Select Installer Language",
-        "menu_host": "Set Hostname",
-        "menu_disk": "Select Disk",
-        "menu_user": "Set User & Password",
-        "menu_locale": "System Language (Locale)",
-        "menu_keymap": "Keyboard Layout",
-        "menu_timezone": "Timezone",
-        "menu_de": "Select Desktop Environment",
-        "menu_luks": "Disk Encryption (LUKS)",
-        "menu_install": "Start Installation",
-        "menu_exit": "Exit",
-        "ask_host": "Enter Hostname: ",
-        "ask_user": "Username: ",
-        "ask_pass": "Password: ",
-        "ask_pass_conf": "Confirm Password: ",
-        "err_pass": "Passwords do not match.",
-        "ask_luks": "Enable LUKS Encryption? (y/n): ",
-        "ask_luks_pass": "LUKS Password: ",
-        "ask_locale": "Enter system locale: ",
-        "ask_timezone": "Enter Timezone: ",
-        "warn_wipe": "WARNING: ALL DATA ON {} WILL BE DESTROYED!",
-        "confirm": "Type 'yes' to continue: ",
-        "step_part": "Partitioning Disk...",
-        "step_fmt": "Formatting Partitions...",
-        "step_copy": "Copying System Files...",
-        "step_de": "Installing Desktop Environment...",
-        "step_cfg": "Configuring System...",
-        "done": "Installation Complete!",
-        "uefi_warn": "IMPORTANT: You MUST manually add the boot entry in your BIOS/UEFI!\nPath: \\EFI\\NextFerretOS\\grubx64.efi",
-        "err_root": "Error: Must run as root.",
-        "err_tool": "Error: Missing tool: {}",
-        "summary": "Configuration Summary",
-        "status_none": "None",
-        "de_none": "None (CLI Only)",
-        "key_us": "US (American)",
-        "key_br": "BR (ABNT2)",
-        "key_pt": "PT (Portugal)",
-        "key_custom": "Custom"
+        "title": "NextFerretOS Installer",
+        "step_welcome": "Welcome",
+        "step_location": "Location",
+        "step_keyboard": "Keyboard",
+        "step_desktop": "Software",
+        "step_partitions": "Disk Setup",
+        "step_users": "User Account",
+        "step_summary": "Summary",
+        "step_install": "Installing",
+        "step_finish": "Complete",
+        "next": "Next Step",
+        "back": "Previous",
+        "install": "Install System",
+        "quit": "Reboot System",
+        "welcome_msg": "Welcome to NextFerretOS",
+        "welcome_sub": "Follow the steps to configure and install your new operating system.",
+        "locale": "System Language",
+        "tz": "Timezone",
+        "keymap": "Keyboard Layout",
+        "de": "Desktop Environment",
+        "disk": "Target Drive",
+        "luks": "Enable Disk Encryption (LUKS)",
+        "luks_p": "Encryption Password",
+        "host": "Computer Name",
+        "user_name": "Full Name",
+        "pass": "Password",
+        "pass_c": "Confirm Password",
+        "err_pass": "Passwords do not match or are empty.",
+        "err_disk": "Please select a target disk.",
+        "err_user": "Username and Hostname are required.",
+        "summary_title": "Installation Summary",
+        "summary_warn": "Warning: All data on the selected drive will be permanently erased.",
+        "finish_msg": "Installation Complete",
+        "finish_sub": "NextFerretOS has been successfully installed. Remove the media, reboot, and remember to manually set the EFI boot file in your BIOS if it doesn't boot automatically.",
+        "warn_vm": "Virtual Machine Detected",
+        "warn_power": "Running on Battery",
+        "net_err": "No Internet Connection detected. Installation requires an active connection."
     },
     "pt": {
-        "header": "Instalador NextFerretOS 1.3 (Furão Quântico)",
-        "sel_lang": "Selecione o Idioma do Instalador",
-        "menu_host": "Definir Hostname",
-        "menu_disk": "Selecionar Disco",
-        "menu_user": "Definir Usuário e Senha",
-        "menu_locale": "Idioma do Sistema (Locale)",
-        "menu_keymap": "Layout do Teclado",
-        "menu_timezone": "Fuso Horário (Timezone)",
-        "menu_de": "Interface Gráfica (Desktop)",
-        "menu_luks": "Criptografia de Disco (LUKS)",
-        "menu_install": "Iniciar Instalação",
-        "menu_exit": "Sair",
-        "ask_host": "Digite o Hostname: ",
-        "ask_user": "Usuário: ",
-        "ask_pass": "Senha: ",
-        "ask_pass_conf": "Confirme a Senha: ",
-        "err_pass": "Senhas não coincidem.",
-        "ask_luks": "Habilitar Criptografia LUKS? (s/n): ",
-        "ask_luks_pass": "Senha LUKS: ",
-        "ask_locale": "Digite o locale: ",
-        "ask_timezone": "Digite o Fuso Horário: ",
-        "warn_wipe": "AVISO: TODOS OS DADOS EM {} SERÃO DESTRUÍDOS!",
-        "confirm": "Digite 'sim' para continuar: ",
-        "step_part": "Particionando Disco...",
-        "step_fmt": "Formatando Partições...",
-        "step_copy": "Copiando Arquivos do Sistema...",
-        "step_de": "Instalando Interface Gráfica...",
-        "step_cfg": "Configurando Sistema...",
-        "done": "Instalação Concluída!",
-        "uefi_warn": "IMPORTANTE: Você PRECISA adicionar a entrada de boot manualmente na BIOS/UEFI!\nCaminho: \\EFI\\NextFerretOS\\grubx64.efi",
-        "err_root": "Erro: Execute como root.",
-        "err_tool": "Erro: Ferramenta faltando: {}",
-        "summary": "Resumo da Configuração",
-        "status_none": "Nenhum",
-        "de_none": "Nenhuma (Apenas CLI)",
-        "key_us": "US (Americano)",
-        "key_br": "BR (ABNT2)",
-        "key_pt": "PT (Portugal)",
-        "key_custom": "Outro"
+        "title": "Instalador NextFerretOS",
+        "step_welcome": "Bem-vindo",
+        "step_location": "Localização",
+        "step_keyboard": "Teclado",
+        "step_desktop": "Software",
+        "step_partitions": "Disco",
+        "step_users": "Usuário",
+        "step_summary": "Resumo",
+        "step_install": "Instalando",
+        "step_finish": "Concluído",
+        "next": "Próximo",
+        "back": "Voltar",
+        "install": "Instalar",
+        "quit": "Reiniciar",
+        "welcome_msg": "Bem-vindo ao NextFerretOS",
+        "welcome_sub": "Siga os passos para configurar e instalar seu novo sistema.",
+        "locale": "Idioma",
+        "tz": "Fuso Horário",
+        "keymap": "Layout",
+        "de": "Ambiente Gráfico",
+        "disk": "Disco de Destino",
+        "luks": "Criptografia de Disco (LUKS)",
+        "luks_p": "Senha da Criptografia",
+        "host": "Nome do Computador",
+        "user_name": "Nome Completo",
+        "pass": "Senha",
+        "pass_c": "Confirmar Senha",
+        "err_pass": "Senhas não conferem.",
+        "err_disk": "Selecione um disco.",
+        "err_user": "Preencha todos os campos.",
+        "summary_title": "Resumo da Instalação",
+        "summary_warn": "Aviso: Todos os dados no disco selecionado serão apagados.",
+        "finish_msg": "Instalação Concluída",
+        "finish_sub": "O NextFerretOS foi instalado com sucesso. Remova a mídia, reinicie e lembre-se de configurar manualmente o arquivo EFI na BIOS se não der boot automaticamente.",
+        "warn_vm": "Máquina Virtual Detectada",
+        "warn_power": "Rodando na Bateria",
+        "net_err": "Sem conexão com a Internet. A instalação requer rede ativa."
+    },
+    "es": {
+        "title": "Instalador NextFerretOS",
+        "step_welcome": "Bienvenido",
+        "step_location": "Ubicación",
+        "step_keyboard": "Teclado",
+        "step_desktop": "Software",
+        "step_partitions": "Disco",
+        "step_users": "Usuario",
+        "step_summary": "Resumen",
+        "step_install": "Instalando",
+        "step_finish": "Completado",
+        "next": "Siguiente",
+        "back": "Atrás",
+        "install": "Instalar",
+        "quit": "Reiniciar",
+        "welcome_msg": "Bienvenido a NextFerretOS",
+        "welcome_sub": "Siga los pasos para configurar e instalar su nuevo sistema.",
+        "locale": "Idioma",
+        "tz": "Zona Horaria",
+        "keymap": "Distribución de Teclado",
+        "de": "Entorno de Escritorio",
+        "disk": "Disco de Destino",
+        "luks": "Cifrado de Disco (LUKS)",
+        "luks_p": "Contraseña de Cifrado",
+        "host": "Nombre del Equipo",
+        "user_name": "Nombre Completo",
+        "pass": "Contraseña",
+        "pass_c": "Confirmar Contraseña",
+        "err_pass": "Las contraseñas no coinciden.",
+        "err_disk": "Seleccione un disco.",
+        "err_user": "Debe rellenar todos los campos.",
+        "summary_title": "Resumen de Instalación",
+        "summary_warn": "Aviso: Todos los datos en el disco seleccionado serán eliminados.",
+        "finish_msg": "Instalación Completada",
+        "finish_sub": "NextFerretOS se instaló correctamente. Retire el medio, reinicie y recuerde configurar manualmente el archivo EFI en la BIOS si no arranca automáticamente.",
+        "warn_vm": "Máquina Virtual Detectada",
+        "warn_power": "Ejecutando con Batería",
+        "net_err": "No se detectó conexión a Internet."
+    },
+    "fr": {
+        "title": "Programme d'installation NextFerretOS",
+        "step_welcome": "Bienvenue",
+        "step_location": "Emplacement",
+        "step_keyboard": "Clavier",
+        "step_desktop": "Logiciel",
+        "step_partitions": "Disque",
+        "step_users": "Utilisateur",
+        "step_summary": "Résumé",
+        "step_install": "Installation",
+        "step_finish": "Terminé",
+        "next": "Suivant",
+        "back": "Retour",
+        "install": "Installer",
+        "quit": "Redémarrer",
+        "welcome_msg": "Bienvenue sur NextFerretOS",
+        "welcome_sub": "Suivez les étapes pour configurer et installer votre système.",
+        "locale": "Langue",
+        "tz": "Fuseau Horaire",
+        "keymap": "Disposition du Clavier",
+        "de": "Environnement de Bureau",
+        "disk": "Disque Cible",
+        "luks": "Chiffrement du Disque (LUKS)",
+        "luks_p": "Mot de passe de Chiffrement",
+        "host": "Nom de l'Ordinateur",
+        "user_name": "Nom Complet",
+        "pass": "Mot de passe",
+        "pass_c": "Confirmer le mot de passe",
+        "err_pass": "Les mots de passe ne correspondent pas.",
+        "err_disk": "Veuillez sélectionner un disque.",
+        "err_user": "Remplissez tous les champs.",
+        "summary_title": "Résumé de l'installation",
+        "summary_warn": "Avertissement : Toutes les données sur le disque seront effacées.",
+        "finish_msg": "Installation Terminée",
+        "finish_sub": "NextFerretOS a été installé. Retirez le support, redémarrez et n'oubliez pas de configurer manuellement le fichier EFI dans le BIOS s'il ne démarre pas automatiquement.",
+        "warn_vm": "Machine Virtuelle Détectée",
+        "warn_power": "Fonctionnement sur Batterie",
+        "net_err": "Pas de connexion Internet."
+    },
+    "de": {
+        "title": "NextFerretOS Installationsprogramm",
+        "step_welcome": "Willkommen",
+        "step_location": "Standort",
+        "step_keyboard": "Tastatur",
+        "step_desktop": "Software",
+        "step_partitions": "Festplatte",
+        "step_users": "Benutzer",
+        "step_summary": "Zusammenfassung",
+        "step_install": "Installieren",
+        "step_finish": "Abgeschlossen",
+        "next": "Weiter",
+        "back": "Zurück",
+        "install": "Installieren",
+        "quit": "Neustart",
+        "welcome_msg": "Willkommen bei NextFerretOS",
+        "welcome_sub": "Folgen Sie den Schritten zur Konfiguration und Installation.",
+        "locale": "Sprache",
+        "tz": "Zeitzone",
+        "keymap": "Tastaturlayout",
+        "de": "Desktop-Umgebung",
+        "disk": "Ziellaufwerk",
+        "luks": "Festplattenverschlüsselung (LUKS)",
+        "luks_p": "Verschlüsselungspasswort",
+        "host": "Computername",
+        "user_name": "Vollständiger Name",
+        "pass": "Passwort",
+        "pass_c": "Passwort bestätigen",
+        "err_pass": "Passwörter stimmen nicht überein.",
+        "err_disk": "Bitte wählen Sie eine Festplatte aus.",
+        "err_user": "Bitte füllen Sie alle Felder aus.",
+        "summary_title": "Zusammenfassung",
+        "summary_warn": "Warnung: Alle Daten auf der ausgewählten Festplatte werden gelöscht.",
+        "finish_msg": "Installation Abgeschlossen",
+        "finish_sub": "NextFerretOS wurde erfolgreich installiert. Entfernen Sie das Medium, starten Sie neu und denken Sie daran, die EFI-Datei im BIOS manuell einzustellen, falls es nicht automatisch bootet.",
+        "warn_vm": "Virtuelle Maschine Erkannt",
+        "warn_power": "Akkubetrieb Erkannt",
+        "net_err": "Keine Internetverbindung erkannt."
+    },
+    "gl": {
+        "title": "Instalador NextFerretOS",
+        "step_welcome": "Benvido",
+        "step_location": "Localización",
+        "step_keyboard": "Teclado",
+        "step_desktop": "Software",
+        "step_partitions": "Configuración do Disco",
+        "step_users": "Conta de Usuario",
+        "step_summary": "Resumo",
+        "step_install": "Instalando",
+        "step_finish": "Completado",
+        "next": "Seguinte",
+        "back": "Atrás",
+        "install": "Instalar",
+        "quit": "Reiniciar",
+        "welcome_msg": "Benvido a NextFerretOS",
+        "welcome_sub": "Siga os pasos para configurar e instalar o seu novo sistema.",
+        "locale": "Idioma do Sistema",
+        "tz": "Fuso Horario",
+        "keymap": "Distribución do Teclado",
+        "de": "Entorno de Escritorio",
+        "disk": "Unidade de Destino",
+        "luks": "Activar Cifrado de Disco (LUKS)",
+        "luks_p": "Contrasinal de Cifrado",
+        "host": "Nome do Computador",
+        "user_name": "Nome Completo",
+        "pass": "Contrasinal",
+        "pass_c": "Confirmar Contrasinal",
+        "err_pass": "Os contrasinais non coinciden.",
+        "err_disk": "Seleccione unha unidade.",
+        "err_user": "Requírese nome de usuario e nome de host.",
+        "summary_title": "Resumo da Instalación",
+        "summary_warn": "Aviso: Todos os datos na unidade seleccionada serán eliminados.",
+        "finish_msg": "Instalación Completada",
+        "finish_sub": "NextFerretOS instalouse correctamente. Retire o medio, reinicie e configure manualmente o ficheiro EFI na BIOS se non arrinca automaticamente.",
+        "warn_vm": "Máquina Virtual Detectada",
+        "warn_power": "Executando con Batería",
+        "net_err": "Non se detectou conexión a Internet."
     }
 }
 
-class Colors:
-    H, B, G, W, F, R = '\033[95m', '\033[94m', '\033[92m', '\033[93m', '\033[91m', '\033[0m'
+SIMULATE = "--simulate" in sys.argv
+
+class NetUtils:
+    @staticmethod
+    def check_connection():
+        if SIMULATE: return True
+        try:
+            socket.create_connection(("8.8.8.8", 53), timeout=3)
+            return True
+        except OSError:
+            return False
+
+    @staticmethod
+    def get_svg_data(name, to_white=False):
+        url = f"https://raw.githubusercontent.com/feathericons/feather/master/icons/{name}.svg"
+        try:
+            with urllib.request.urlopen(url, timeout=3) as response:
+                data = response.read()
+                if to_white:
+                    data = data.replace(b'currentColor', b'#ffffff')
+                return data
+        except:
+            return None
 
 class Sys:
     @staticmethod
@@ -102,13 +419,11 @@ class Sys:
         try:
             r = subprocess.run(cmd, shell=True, check=check, text=True, input=input_text, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             return r.stdout.strip()
-        except subprocess.CalledProcessError as e:
-            return None
-        except Exception:
-            return None
+        except: return None
 
     @staticmethod
     def list_disks():
+        if SIMULATE: return [{"name": "sda", "size": "500G", "model": "VBOX HARDDISK", "type": "disk"}]
         o = Sys.run("lsblk -d -n -o NAME,SIZE,MODEL,TYPE -J", check=False)
         if o:
             try: return [d for d in json.loads(o)['blockdevices'] if d['type'] == 'disk']
@@ -117,229 +432,228 @@ class Sys:
 
     @staticmethod
     def get_uuid(dev):
+        if SIMULATE and "sda" in dev: return f"UUID-for-{dev}"
         return Sys.run(f"blkid -s UUID -o value {dev}")
 
-class Installer:
-    def __init__(self):
-        self.ui_lang, self.sys_locale = "en", "en_US.UTF-8"
-        self.conf = {"hostname": "nextferret", "disk": None, "user": "ferret", "pass": None, "luks": False, "luks_pass": None, "keymap": "us", "timezone": "UTC", "de_name": "None", "de_pkgs": ""}
-        self.mount, self.mapper = "/mnt/nextferret", "cryptferret"
-
-    def t(self, key): return TEXT[self.ui_lang].get(key, key)
-    def clear(self): os.system('clear')
-
-    def check_reqs(self):
-        if os.geteuid() != 0: print(self.t("err_root")); sys.exit(1)
-        for t in ["debootstrap", "mkfs.btrfs", "parted", "cryptsetup", "wipefs", "mkfs.vfat", "wget"]:
-            if not shutil.which(t): print(self.t("err_tool").format(t)); sys.exit(1)
-
-    def select_ui_language(self):
-        self.clear()
-        print(f"{Colors.H}1. English\n2. Português (Brasil){Colors.R}")
-        if input("> ") == "2":
-            self.ui_lang, self.sys_locale = "pt", "pt_BR.UTF-8"
-            self.conf["keymap"], self.conf["timezone"] = "br", "America/Sao_Paulo"
-
-    def show_summary(self):
-        print(f"\n{Colors.B}--- {self.t('summary')} ---{Colors.R}")
-        for k, v in [("Hostname", self.conf['hostname']), ("Locale", self.sys_locale), ("Timezone", self.conf['timezone']), ("Keyboard", self.conf['keymap']), ("Disk", self.conf['disk'] or self.t('status_none')), ("Desktop Env", self.conf['de_name']), ("User", self.conf['user']), ("LUKS", self.conf['luks'])]:
-            print(f"{k:<20}: {Colors.G}{v}{Colors.R}")
-        print("-" * 40)
-
-    def menu(self):
-        while True:
-            self.clear()
-            os.system('cat /etc/motd 2>/dev/null')
-            print(f"{Colors.H}{self.t('header')}{Colors.R}")
-            self.show_summary()
-            opts = [(self.t("menu_host"), self.set_host), (self.t("menu_locale"), self.set_locale), (self.t("menu_timezone"), self.set_timezone), (self.t("menu_keymap"), self.set_keyboard), (self.t("menu_disk"), self.set_disk), (self.t("menu_de"), self.set_de), (self.t("menu_user"), self.set_user), (self.t("menu_luks"), self.set_luks), (self.t("menu_install"), self.run_install), (self.t("menu_exit"), sys.exit)]
-            for i, (txt, _) in enumerate(opts): print(f"{i+1}. {txt}")
-            try:
-                raw_input = input("\n> ")
-                if not raw_input: continue
-                c = int(raw_input) - 1
-                if 0 <= c < len(opts):
-                    opts[c][1]()
-            except ValueError:
-                pass
-
-    def set_host(self): h = input(self.t("ask_host")); self.conf["hostname"] = h or self.conf["hostname"]
-    def set_locale(self): l = input(self.t("ask_locale")); self.sys_locale = l or self.sys_locale
-    def set_timezone(self): t = input(self.t("ask_timezone")); self.conf["timezone"] = t or self.conf["timezone"]
-    def set_keyboard(self): k = input("Keymap (us, br, pt): "); self.conf["keymap"] = k or self.conf["keymap"]
-
-    def set_de(self):
-        des = [(self.t("de_none"), ""), ("XFCE", "xfce4 xfce4-goodies lightdm"), ("GNOME", "gnome-core gdm3"), ("KDE", "kde-standard sddm")]
-        for i, (n, _) in enumerate(des): print(f"{i+1}. {n}")
+    @staticmethod
+    def list_locales():
         try:
-            c = int(input("> ")) - 1
-            self.conf["de_name"], self.conf["de_pkgs"] = des[c][0], des[c][1]
-        except: pass
+            with open('/usr/share/i18n/SUPPORTED', 'r') as f:
+                return sorted([line.split()[0] for line in f if 'UTF-8' in line])
+        except:
+            return ["en_US.UTF-8", "pt_BR.UTF-8", "es_ES.UTF-8", "fr_FR.UTF-8", "de_DE.UTF-8"]
 
-    def set_disk(self):
-        disks = Sys.list_disks()
-        for i, d in enumerate(disks): print(f"{i}. /dev/{d['name']} ({d['size']})")
-        try: c = int(input("> ")); self.conf["disk"] = f"/dev/{disks[c]['name']}"
-        except: pass
+    @staticmethod
+    def list_keymaps():
+        out = Sys.run("localectl list-x11-keymap-layouts", check=False)
+        if out: return sorted([l for l in out.split('\n') if l.strip()])
+        return sorted(["us", "br", "pt", "es", "fr", "de", "it", "gb"])
 
-    def set_user(self):
-        self.conf["user"] = input(self.t("ask_user"))
-        while True:
-            p1, p2 = getpass.getpass(self.t("ask_pass")), getpass.getpass(self.t("ask_pass_conf"))
-            if p1 == p2 and p1: self.conf["pass"] = p1; break
-            print(self.t("err_pass"))
+    @staticmethod
+    def list_timezones():
+        out = Sys.run("timedatectl list-timezones", check=False)
+        if out: return [t for t in out.split('\n') if t.strip()]
+        return ["UTC", "America/New_York", "America/Sao_Paulo", "Europe/London", "Europe/Paris", "Europe/Berlin", "Europe/Madrid", "Asia/Tokyo"]
 
-    def set_luks(self):
-        if input(self.t("ask_luks")).lower().startswith(('y', 's')):
-            self.conf["luks"] = True
-            while True:
-                p1, p2 = getpass.getpass(self.t("ask_luks_pass")), getpass.getpass(self.t("ask_pass_conf"))
-                if p1 == p2 and p1: self.conf["luks_pass"] = p1; break
-        else: self.conf["luks"] = False
+    @staticmethod
+    def is_vm():
+        r = Sys.run("systemd-detect-virt", check=False)
+        return r != "none" if r else False
 
-    def run_install(self):
-        if not self.conf["disk"] or not self.conf["pass"]:
-            print("Disk and password must be set."); return
+    @staticmethod
+    def is_on_battery():
+        p = "/sys/class/power_supply"
+        if not os.path.exists(p): return False
+        for supply in os.listdir(p):
+            if supply.startswith("BAT"):
+                status_path = os.path.join(p, supply, "status")
+                if os.path.exists(status_path):
+                    with open(status_path, 'r') as f:
+                        if f.read().strip() == "Discharging": return True
+        return False
 
-        confirm_word = "sim" if self.ui_lang == "pt" else "yes"
-        if input(f"{self.t('warn_wipe').format(self.conf['disk'])}\n{self.t('confirm')}").lower() != confirm_word:
+class InstallWorker(QThread):
+    log_msg = pyqtSignal(str)
+    finished = pyqtSignal(bool)
+
+    def __init__(self, conf, locale):
+        super().__init__()
+        self.conf = conf
+        self.sys_locale = locale
+        self.mount = "/mnt/nextferret"
+        self.mapper = "cryptferret"
+
+    def run_cmd(self, cmd, input_text=None):
+        self.log_msg.emit(f"== {cmd}")
+        if SIMULATE:
+            return True
+        try:
+            p = subprocess.Popen(cmd, shell=True, text=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            if input_text:
+                p.stdin.write(input_text + "\n")
+                p.stdin.flush()
+            for line in p.stdout:
+                self.log_msg.emit(line.strip())
+            p.wait()
+            return p.returncode == 0
+        except Exception as e:
+            self.log_msg.emit(f"ERROR: {str(e)}")
+            return False
+
+    def run(self):
+        if SIMULATE:
+            sim_logs = [
+                "==> wipefs -a /dev/sda",
+                "/dev/sda: 8 bytes were erased at offset 0x00000200 (gpt): 45 46 49 20 50 41 52 54",
+                "==> parted -s /dev/sda mklabel gpt",
+                "==> parted -s /dev/sda mkpart ESP fat32 1MiB 513MiB",
+                "==> parted -s /dev/sda set 1 esp on",
+                "==> parted -s /dev/sda mkpart primary 513MiB 100%",
+                "==> mkfs.vfat -F32 /dev/sda1",
+                "mkfs.fat 4.2 (2021-01-31)",
+                "==> mkfs.btrfs -f -L NextRoot /dev/sda2",
+                "btrfs-progs v6.2",
+                "See http://btrfs.wiki.kernel.org for more information.",
+                "==> blkid -s UUID -o value /dev/sda2",
+                "==> blkid -s UUID -o value /dev/sda1",
+                "==> mount /dev/sda2 /mnt/tmp_install",
+                "==> btrfs sub create /mnt/tmp_install/@",
+                "Create subvolume '/mnt/tmp_install/@'",
+                "==> btrfs sub create /mnt/tmp_install/@home",
+                "Create subvolume '/mnt/tmp_install/@home'",
+                "==> umount /mnt/tmp_install",
+                "==> mount -o defaults,compress=zstd:1,noatime,subvol=@ /dev/sda2 /mnt/nextferret",
+                "==> debootstrap --arch=amd64 trixie /mnt/nextferret http://deb.debian.org/debian",
+                "I: Retrieving InRelease",
+                "I: Checking Release signature",
+                "I: Valid Release signature",
+                "I: Retrieving Packages",
+                "I: Validating Packages",
+                "I: Resolving dependencies of required packages...",
+                "I: Resolving dependencies of base packages...",
+                "I: Checking component main on http://deb.debian.org/debian...",
+                "I: Extracting base-files...",
+                "I: Extracting apt...",
+                "I: Extracting dpkg...",
+                "I: Extracting systemd...",
+                "I: Configuring base-files...",
+                "I: Configuring apt...",
+                "I: Base system installed successfully.",
+                "==> wget -O /mnt/nextferret/tmp/nextferret-base.deb https://github.com/NextFerret/nextferretOS/releases/download/basenotiso/nextferret-base_999999.99999_all.deb",
+                "Saving to: ‘/mnt/nextferret/tmp/nextferret-base.deb’",
+                "200 OK",
+                "==> mount --bind /dev /mnt/nextferret/dev",
+                "==> chroot /mnt/nextferret /s.sh",
+                "Adding user...",
+                "Generating /etc/fstab...",
+                "update-initramfs: Generating /boot/initrd.img-6.1.0-9-amd64",
+                "Installing for x86_64-efi platform.",
+                "Installation finished. No error reported.",
+                "Generating grub configuration file ...",
+                "Found linux image: /boot/vmlinuz-6.1.0-9-amd64",
+                "Found initrd image: /boot/initrd.img-6.1.0-9-amd64",
+                "done",
+                "Installing grub-btrfs...",
+                "Creating first system snapshot...",
+                "Updating GRUB to include snapshots...",
+                "==> umount -R /mnt/nextferret",
+                "Installation complete."
+            ]
+            delay = 60.0 / len(sim_logs)
+            for msg in sim_logs:
+                self.log_msg.emit(msg)
+                time.sleep(delay)
+            self.finished.emit(True)
             return
 
         d = self.conf["disk"]
-        print(self.t("step_part"))
-        Sys.run(f"wipefs -a {d}")
-        Sys.run(f"parted -s {d} mklabel gpt")
-        Sys.run(f"parted -s {d} mkpart ESP fat32 1MiB 513MiB")
-        Sys.run(f"parted -s {d} set 1 esp on")
-        Sys.run(f"parted -s {d} mkpart primary 513MiB 100%")
+        self.log_msg.emit("Starting disk partitioning...")
+        self.run_cmd(f"wipefs -a {d}")
+        self.run_cmd(f"parted -s {d} mklabel gpt")
+        self.run_cmd(f"parted -s {d} mkpart ESP fat32 1MiB 513MiB")
+        self.run_cmd(f"parted -s {d} set 1 esp on")
+        self.run_cmd(f"parted -s {d} mkpart primary 513MiB 100%")
 
         sep = "p" if "nvme" in d else ""
         p1, p2 = f"{d}{sep}1", f"{d}{sep}2"
         root_dev = p2
 
         if self.conf["luks"]:
-            print("Setting up LUKS...")
-            Sys.run(f"cryptsetup luksFormat --type luks2 {p2} -", input_text=self.conf["luks_pass"])
-            Sys.run(f"cryptsetup open {p2} {self.mapper} -", input_text=self.conf["luks_pass"])
+            self.run_cmd(f"cryptsetup luksFormat --type luks2 {p2} -", self.conf["luks_pass"])
+            self.run_cmd(f"cryptsetup open {p2} {self.mapper} -", self.conf["luks_pass"])
             root_dev = f"/dev/mapper/{self.mapper}"
 
-        print(self.t("step_fmt"))
-        Sys.run(f"mkfs.vfat -F32 {p1}")
-        Sys.run(f"mkfs.btrfs -f -L NextRoot {root_dev}")
-
-        tmp = "/mnt/tmp_install"
-        os.makedirs(tmp, exist_ok=True)
-        Sys.run(f"mount {root_dev} {tmp}")
-        Sys.run(f"btrfs sub create {tmp}/@")
-        Sys.run(f"btrfs sub create {tmp}/@home")
-        Sys.run(f"umount {tmp}")
-
-        os.makedirs(self.mount, exist_ok=True)
-        mnt_opts = "defaults,compress=zstd:1,noatime"
-        Sys.run(f"mount -o {mnt_opts},subvol=@ {root_dev} {self.mount}")
-        for p in ["home", "boot/efi"]: os.makedirs(f"{self.mount}/{p}", exist_ok=True)
-        Sys.run(f"mount -o {mnt_opts},subvol=@home {root_dev} {self.mount}/home")
-        Sys.run(f"mount {p1} {self.mount}/boot/efi")
-
-        os.makedirs(f"{self.mount}/nf-tree/snapshots", exist_ok=True)
-
-        print(self.t("step_copy"))
-        debootstrap_cmd = f"debootstrap --arch=amd64 trixie {self.mount} http://deb.debian.org/debian"
-        r = Sys.run(debootstrap_cmd)
-        if r is None:
-            print("debootstrap failed. Check network and that debootstrap is installed.");
-            try: Sys.run(f"umount -R {self.mount}")
-            except: pass
-            if self.conf["luks"]:
-                Sys.run(f"cryptsetup close {self.mapper}")
-            sys.exit(1)
-
-        print(f"{Colors.G}Downloading NextFerret Base Package...{Colors.R}")
-        base_deb_url = "https://github.com/NextFerret/nextferretOS/releases/download/basenotiso/nextferret-base_999999.99999_all.deb"
-        Sys.run(f"wget -O {self.mount}/tmp/nextferret-base.deb {base_deb_url}")
-
-        for m in ["/dev", "/dev/pts", "/proc", "/sys"]:
-            Sys.run(f"mount --bind {m} {self.mount}{m}")
-        shutil.copy("/etc/resolv.conf", f"{self.mount}/etc/resolv.conf")
-
-        print(f"{Colors.G}Copying NextFerretOS specific files...{Colors.R}")
-
-        custom_files = [
-            ("/etc/os-release", "etc/os-release", False),
-            ("/etc/debian_version", "etc/debian_version", False),
-            ("/etc/apt/preferences.d/nextferret", "etc/apt/preferences.d/nextferret", False),
-            ("/usr/bin/nextferret-updater", "usr/bin/nextferret-updater", True),
-            ("/etc/apt/apt.conf.d/99nftree", "tmp/99nftree", False),
-            ("/etc/motd", "etc/motd", False),
-            ("/usr/share/applications/updater.desktop", "usr/share/applications/updater.desktop", False),
-            ("/usr/share/icons/hicolor/4000x4000/distributor-logo.png", "usr/share/icons/hicolor/4000x4000/distributor-logo.png", False),
-            ("/etc/plymouth/plymouthd.conf", "etc/plymouth/plymouthd.conf", False)
-        ]
-
-        for src, dest_rel, make_exec in custom_files:
-            dest_abs = os.path.join(self.mount, dest_rel)
-            if os.path.exists(src):
-                try:
-                    os.makedirs(os.path.dirname(dest_abs), exist_ok=True)
-                    shutil.copy2(src, dest_abs)
-                    if make_exec:
-                        os.chmod(dest_abs, 0o755)
-                    print(f" -> Copied file: {src}")
-                except Exception as e:
-                    print(f" -> Failed to copy {src}: {e}")
-            else:
-                print(f" -> Warning: File not found: {src}")
-
-        print(f"{Colors.G}Downloading nf-tree...{Colors.R}")
-        nf_tree_url = "https://raw.githubusercontent.com/NextFerret/nextferretOS/refs/heads/main/usr/bin/nf-tree"
-        nf_tree_dest = os.path.join(self.mount, "usr/bin/nf-tree")
-        os.makedirs(os.path.dirname(nf_tree_dest), exist_ok=True)
-        Sys.run(f"wget --no-check-certificate -O {nf_tree_dest} {nf_tree_url}")
-        Sys.run(f"chmod +x {nf_tree_dest}")
-
-        plymouth_src = "/usr/share/plymouth/themes/blockchain"
-        plymouth_dest = os.path.join(self.mount, "usr/share/plymouth/themes/blockchain")
-        if os.path.exists(plymouth_src):
-            try:
-                os.makedirs(os.path.dirname(plymouth_dest), exist_ok=True)
-                shutil.copytree(plymouth_src, plymouth_dest, dirs_exist_ok=True)
-                print(f" -> Copied Plymouth theme: blockchain")
-            except Exception as e:
-                print(f" -> Failed to copy Plymouth theme: {e}")
-        else:
-            print(f" -> Warning: Plymouth theme 'blockchain' not found in live system.")
-
-        print(f"{Colors.G}Configuring Network...{Colors.R}")
-        with open(f"{self.mount}/etc/network/interfaces", "w") as f:
-            f.write("auto lo\niface lo inet loopback\n")
-
-        nm_src = "/etc/NetworkManager/system-connections"
-        nm_dest = f"{self.mount}/etc/NetworkManager/system-connections"
-        if os.path.exists(nm_src) and os.path.isdir(nm_src):
-            try:
-                os.makedirs(nm_dest, exist_ok=True)
-                for item in os.listdir(nm_src):
-                    s = os.path.join(nm_src, item)
-                    d = os.path.join(nm_dest, item)
-                    if os.path.isfile(s):
-                        shutil.copy2(s, d)
-                        os.chmod(d, 0o600)
-                print(" -> Copied NetworkManager connections.")
-            except Exception as e:
-                print(f" -> Error copying network connections: {e}")
+        self.run_cmd(f"mkfs.vfat -F32 {p1}")
+        self.run_cmd(f"mkfs.btrfs -f -L NextRoot {root_dev}")
 
         u_root = Sys.get_uuid(root_dev)
         u_efi = Sys.get_uuid(p1)
-        with open(f"{self.mount}/etc/fstab", "w") as f:
-            f.write(f"UUID={u_root} / btrfs defaults,subvol=@,compress=zstd,noatime 0 0\n")
-            f.write(f"UUID={u_root} /home btrfs defaults,subvol=@home,compress=zstd,noatime 0 0\n")
-            f.write(f"UUID={u_efi} /boot/efi vfat umask=0077 0 2\n")
+        if not u_root or not u_efi:
+            self.log_msg.emit("ERROR: Could not get UUIDs for partitions. Cannot generate fstab.")
+            self.finished.emit(False)
+            return
 
+        tmp = "/mnt/tmp_install"
+        os.makedirs(tmp, exist_ok=True)
+        self.run_cmd(f"mount {root_dev} {tmp}")
+        self.run_cmd(f"btrfs sub create {tmp}/@")
+        self.run_cmd(f"btrfs sub create {tmp}/@home")
+        self.run_cmd(f"umount {tmp}")
+
+        os.makedirs(self.mount, exist_ok=True)
+        mnt_opts = "defaults,compress=zstd:1,noatime"
+        self.run_cmd(f"mount -o {mnt_opts},subvol=@ {root_dev} {self.mount}")
+        for p in ["home", "boot/efi"]: os.makedirs(f"{self.mount}/{p}", exist_ok=True)
+        self.run_cmd(f"mount -o {mnt_opts},subvol=@home {root_dev} {self.mount}/home")
+        self.run_cmd(f"mount {p1} {self.mount}/boot/efi")
+        os.makedirs(f"{self.mount}/nf-tree/snapshots", exist_ok=True)
+
+        if not self.run_cmd(f"debootstrap --arch=amd64 trixie {self.mount} http://deb.debian.org/debian"):
+            self.finished.emit(False)
+            return
+
+        self.run_cmd(f"wget -O {self.mount}/tmp/nextferret-base.deb https://github.com/NextFerret/nextferretOS/releases/download/basenotiso/nextferret-base_999999.99999_all.deb")
+
+        for m in ["/dev", "/dev/pts", "/proc", "/sys"]:
+            self.run_cmd(f"mount --bind {m} {self.mount}{m}")
+        shutil.copy("/etc/resolv.conf", f"{self.mount}/etc/resolv.conf")
+        
+        prefs_src = "/etc/apt/preferences.d/nextferret"
+        if os.path.exists(prefs_src):
+            os.makedirs(f"{self.mount}/etc/apt/preferences.d", exist_ok=True)
+            shutil.copy2(prefs_src, f"{self.mount}/etc/apt/preferences.d/nextferret")
+
+        motd_src = "/etc/motd"
+        if os.path.exists(motd_src):
+            shutil.copy2(motd_src, f"{self.mount}/etc/motd")
+
+        for tool in ["/usr/bin/apt-nf-tree", "/usr/bin/nf-tree"]:
+            if os.path.exists(tool):
+                shutil.copy(tool, f"{self.mount}{tool}")
+                self.run_cmd(f"chmod +x {self.mount}{tool}")
+
+        for osf in ["/etc/os-release", "/usr/lib/os-release", "/etc/lsb-release", "/etc/issue", "/etc/issue.net", "/etc/debian_version"]:
+            if os.path.lexists(osf):
+                dst = f"{self.mount}{osf}"
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
+                if os.path.lexists(dst):
+                    os.remove(dst)
+                if os.path.islink(osf):
+                    os.symlink(os.readlink(osf), dst)
+                else:
+                    shutil.copy2(osf, dst)
+        
         u_p2 = Sys.get_uuid(p2) if self.conf["luks"] else ""
-        luks_sh = ""
-        if self.conf["luks"] and u_p2:
-            luks_sh = f"echo '{self.mapper} UUID={u_p2} none luks,discard,initramfs' > /etc/crypttab\napt-get install -y cryptsetup-initramfs\n"
-        de_sh = f"apt-get install -y {self.conf['de_pkgs']}\n" if self.conf["de_pkgs"] else ""
+        luks_sh = f"echo '{self.mapper} UUID={u_p2} none luks,discard,initramfs' > /etc/crypttab\napt-get install -y cryptsetup-initramfs\n" if self.conf["luks"] and u_p2 else ""
+        de_sh = f"apt-get install -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold {self.conf['de_pkgs']}\n" if self.conf["de_pkgs"] else ""
+        
+        fstab_sh = f"""
+cat << EOF > /etc/fstab
+UUID={u_root} /               btrfs   defaults,compress=zstd:1,noatime,subvol=@ 0       0
+UUID={u_root} /home           btrfs   defaults,compress=zstd:1,noatime,subvol=@home 0       0
+UUID={u_efi}  /boot/efi       vfat    defaults        0       1
+EOF
+"""
 
         script = f"""#!/bin/bash
 set -e
@@ -347,19 +661,31 @@ export DEBIAN_FRONTEND=noninteractive
 
 echo "deb http://deb.debian.org/debian trixie main contrib non-free non-free-firmware" > /etc/apt/sources.list
 echo "deb http://security.debian.org/debian-security trixie-security main contrib non-free" >> /etc/apt/sources.list
+
+mkdir -p /etc/apt/preferences.d
+cat << 'EOF' > /etc/apt/preferences.d/99-block-desktop-base
+Package: desktop-base
+Pin: release *
+Pin-Priority: -2
+EOF
+
+for f in /etc/os-release /usr/lib/os-release /etc/lsb-release /etc/issue /etc/issue.net /etc/debian_version; do
+    if [ -e "$f" ] || [ -L "$f" ]; then
+        cp -a "$f" "$f.custom_bak"
+        dpkg-divert --add --package nextferret-core --rename --divert "$f.distrib" "$f" || true
+        mv "$f.custom_bak" "$f"
+    fi
+done
+
 apt-get update
 
 if [ -f /tmp/nextferret-base.deb ]; then
-    echo "Installing NextFerret Base..."
     dpkg -i /tmp/nextferret-base.deb || apt-get install -f -y
 fi
 
-if [ -f /etc/debian_version ]; then
-    cp /etc/debian_version /etc/debian_version.custom_bak
-    dpkg-divert --add --package nextferret-core --rename --divert /etc/debian_version.distrib /etc/debian_version
-    mv /etc/debian_version.custom_bak /etc/debian_version
-    echo " -> Protecao do /etc/debian_version ativada."
-fi
+mkdir -p /usr/share/apt-nf-tree
+dpkg-divert --add --package nextferret-core --rename --divert /usr/share/apt-nf-tree/apt /usr/bin/apt
+ln -sf /usr/bin/apt-nf-tree /usr/bin/apt
 
 apt-get install -y --no-install-recommends python3 linux-image-amd64 sudo network-manager firmware-linux grub-efi-amd64-signed shim-signed locales keyboard-configuration console-setup ca-certificates plymouth plymouth-themes btrfs-progs grub-common gawk inotify-tools git make
 
@@ -387,8 +713,9 @@ echo "127.0.1.1    {self.conf['hostname']}" >> /etc/hosts
 
 {de_sh}
 
+{fstab_sh}
+
 if [ -d "/usr/share/plymouth/themes/blockchain" ]; then
-    echo "Setting Plymouth theme to blockchain..."
     plymouth-set-default-theme blockchain || true
 fi
 
@@ -396,7 +723,6 @@ update-initramfs -c -k all || update-initramfs -u
 grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=NextFerretOS || true
 update-grub || true
 
-echo "Installing grub-btrfs..."
 mkdir -p /tmp/grub-btrfs
 git clone https://github.com/Antynea/grub-btrfs.git /tmp/grub-btrfs
 cd /tmp/grub-btrfs
@@ -405,12 +731,10 @@ cd /
 rm -rf /tmp/grub-btrfs
 
 if [ -x /usr/bin/nf-tree ]; then
-    echo "Creating first system snapshot..."
-    nf-tree create first-snapshot || echo "Warning: Failed to create first snapshot"
+    nf-tree create first-snapshot || true
 fi
 
 if [ -f /tmp/99nftree ]; then
-    echo "Enabling nf-tree APT hook..."
     mv /tmp/99nftree /etc/apt/apt.conf.d/99nftree
 fi
 
@@ -418,33 +742,674 @@ apt-get clean
 rm /s.sh
 exit 0
 """
-
         chroot_script_path = os.path.join(self.mount, "s.sh")
-        with open(chroot_script_path, "w") as f:
-            f.write(script)
-        Sys.run(f"chmod +x {chroot_script_path}")
-        subprocess.run(f"chroot {self.mount} /s.sh", shell=True)
+        with open(chroot_script_path, "w") as f: f.write(script)
+        self.run_cmd(f"chmod +x {chroot_script_path}")
+        self.run_cmd(f"chroot {self.mount} /s.sh")
 
-        for m in ["/dev/pts", "/dev", "/proc", "/sys"]:
-            try: Sys.run(f"umount {self.mount}{m}")
-            except: pass
+        for m in ["/dev/pts", "/dev", "/proc", "/sys"]: self.run_cmd(f"umount {self.mount}{m}")
+        try: self.run_cmd(f"umount -R {self.mount}")
+        except: self.run_cmd(f"umount -l {self.mount}")
 
-        try:
-            Sys.run(f"umount -R {self.mount}")
-        except:
-            Sys.run(f"umount -l {self.mount}")
+        if self.conf["luks"]: self.run_cmd(f"cryptsetup close {self.mapper}")
 
-        if self.conf["luks"]:
-            Sys.run(f"cryptsetup close {self.mapper}")
+        self.finished.emit(True)
 
-        print(f"\n{Colors.G}{self.t('done')}{Colors.R}")
-        print(f"\n{Colors.W}##################################################")
-        print(self.t("uefi_warn"))
-        print(f"##################################################{Colors.R}\n")
-        sys.exit(0)
+class InstallerGUI(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.ui_lang = "en"
+        self.sys_locale = "en_US.UTF-8"
+        self.conf = {
+            "hostname": "nextferret", "disk": None, "user": "", "pass": "", 
+            "luks": False, "luks_pass": "", "keymap": "us", "timezone": "UTC", 
+            "de_name": "None", "de_pkgs": ""
+        }
+        self.desktops = [
+            ("None (CLI)", ""), 
+            ("XFCE", "xfce4 xfce4-goodies lightdm"), 
+            ("GNOME", "gnome-core gdm3"), 
+            ("KDE Plasma", "kde-standard sddm"),
+            ("Cinnamon", "cinnamon-core lightdm"),
+            ("MATE", "mate-desktop-environment lightdm"),
+            ("LXQt", "lxqt-core sddm")
+        ]
+        self.lang_map = {
+            0: ("en", "en_US.UTF-8", "us", "UTC"),
+            1: ("pt", "pt_BR.UTF-8", "br", "America/Sao_Paulo"),
+            2: ("es", "es_ES.UTF-8", "es", "Europe/Madrid"),
+            3: ("fr", "fr_FR.UTF-8", "fr", "Europe/Paris"),
+            4: ("de", "de_DE.UTF-8", "de", "Europe/Berlin"),
+            5: ("gl", "gl_ES.UTF-8", "gl", "Europe/Madrid")
+        }
+        
+        self.list_of_locales = Sys.list_locales()
+        self.list_of_keymaps = Sys.list_keymaps()
+        self.list_of_timezones = Sys.list_timezones()
+        self.icon_cache = {}
+        self.sidebar_icon_cache = {}
+        
+        self.steps = ["step_welcome", "step_location", "step_keyboard", "step_desktop", 
+                      "step_partitions", "step_users", "step_summary", "step_install", "step_finish"]
+        self.step_keys = ["welcome", "location", "keyboard", "software", "disk", "users", "summary", "install", "finish"]
+
+        self.preload_icons()
+        self.init_ui()
+
+    def t(self, key):
+        return TEXT[self.ui_lang].get(key, key)
+    
+    def preload_icons(self):
+        sidebar_icons = {
+            "welcome": "smile", "location": "map-pin", "keyboard": "grid", 
+            "software": "package", "disk": "hard-drive", "users": "users", 
+            "summary": "file-text", "install": "download-cloud", "finish": "check-circle"
+        }
+        for k, v in sidebar_icons.items():
+            data = NetUtils.get_svg_data(v, to_white=True)
+            if data:
+                pm = QPixmap()
+                pm.loadFromData(data)
+                self.sidebar_icon_cache[k] = QIcon(pm)
+
+        nav_icons = {"next": "arrow-right", "back": "arrow-left", "install_btn": "download", "check_btn": "check"}
+        for k, v in nav_icons.items():
+            data = NetUtils.get_svg_data(v, to_white=False)
+            if data:
+                pm = QPixmap()
+                pm.loadFromData(data)
+                self.icon_cache[k] = QIcon(pm)
+
+    def get_sidebar_icon(self, name):
+        return self.sidebar_icon_cache.get(name, QIcon())
+
+    def get_nav_icon(self, name):
+        return self.icon_cache.get(name, QIcon())
+
+    def init_ui(self):
+        self.setWindowTitle(self.t("title"))
+        self.setMinimumSize(1150, 750)
+        
+        main_widget = QWidget()
+        main_layout = QHBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+        
+        self.sidebar = QListWidget()
+        self.sidebar.setFixedWidth(280)
+        self.sidebar.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.sidebar.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+
+        for i, s in enumerate(self.steps):
+            item = QListWidgetItem(self.get_sidebar_icon(self.step_keys[i]), self.t(s))
+            self.sidebar.addItem(item)
+            
+        main_layout.addWidget(self.sidebar)
+
+        right_panel = QWidget()
+        right_layout = QVBoxLayout()
+        right_layout.setContentsMargins(50, 50, 50, 40)
+
+        self.stack = QStackedWidget()
+        self.stack.addWidget(self.create_welcome_page())
+        self.stack.addWidget(self.create_location_page())
+        self.stack.addWidget(self.create_keyboard_page())
+        self.stack.addWidget(self.create_desktop_page())
+        self.stack.addWidget(self.create_partitions_page())
+        self.stack.addWidget(self.create_users_page())
+        self.stack.addWidget(self.create_summary_page())
+        self.stack.addWidget(self.create_install_page())
+        self.stack.addWidget(self.create_finish_page())
+        right_layout.addWidget(self.stack)
+
+        nav_frame = QFrame()
+        nav_frame.setProperty("card", "true") 
+        
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(25)
+        shadow.setColor(QColor(0, 0, 0, 15))
+        shadow.setOffset(0, 4)
+        nav_frame.setGraphicsEffect(shadow)
+
+        nav_layout = QHBoxLayout()
+        nav_layout.setContentsMargins(25, 20, 25, 20)
+        
+        self.btn_back = QPushButton(self.get_nav_icon("back"), self.t("back"))
+        self.btn_next = QPushButton(self.get_nav_icon("next"), self.t("next"))
+        
+        self.btn_next.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
+        self.btn_next.setProperty("primary", "true")
+        self.btn_next.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_back.setCursor(Qt.CursorShape.PointingHandCursor)
+        
+        self.btn_back.clicked.connect(self.go_back)
+        self.btn_next.clicked.connect(self.go_next)
+        
+        nav_layout.addStretch()
+        nav_layout.addWidget(self.btn_back)
+        nav_layout.addSpacing(15)
+        nav_layout.addWidget(self.btn_next)
+        nav_frame.setLayout(nav_layout)
+        
+        self.nav_container = nav_frame
+        right_layout.addSpacing(25)
+        right_layout.addWidget(self.nav_container)
+
+        right_panel.setLayout(right_layout)
+        main_layout.addWidget(right_panel)
+        main_widget.setLayout(main_layout)
+        self.setCentralWidget(main_widget)
+        
+        self.update_sidebar()
+        self.btn_back.setEnabled(False)
+
+    def update_sidebar(self):
+        idx = self.stack.currentIndex()
+        for i in range(self.sidebar.count()):
+            item = self.sidebar.item(i)
+            item.setSelected(i == idx)
+
+    def create_title(self, text_key, sub_key=None):
+        container = QWidget()
+        l = QVBoxLayout()
+        l.setContentsMargins(0,0,0,25)
+        
+        lbl = QLabel(self.t(text_key))
+        lbl.setProperty("text_key", text_key)
+        lbl.setProperty("heading", "true")
+        l.addWidget(lbl)
+        
+        if sub_key:
+            sub = QLabel(self.t(sub_key))
+            sub.setProperty("text_key", sub_key)
+            sub.setProperty("subheading", "true")
+            l.addWidget(sub)
+            
+        container.setLayout(l)
+        return container
+
+    def create_welcome_page(self):
+        w = QWidget()
+        l = QVBoxLayout()
+        l.addWidget(self.create_title("welcome_msg", "welcome_sub"))
+        
+        if Sys.is_vm() and not SIMULATE:
+            f_vm = QFrame()
+            f_vm.setProperty("alert", "warning")
+            hl = QHBoxLayout()
+            lbl_vm = QLabel(self.t("warn_vm"))
+            lbl_vm.setProperty("alert-text", "warning")
+            hl.addWidget(lbl_vm)
+            hl.addStretch()
+            f_vm.setLayout(hl)
+            l.addWidget(f_vm)
+            l.addSpacing(15)
+
+        if Sys.is_on_battery() and not SIMULATE:
+            f_pwr = QFrame()
+            f_pwr.setProperty("alert", "danger")
+            hl = QHBoxLayout()
+            lbl_pwr = QLabel(self.t("warn_power"))
+            lbl_pwr.setProperty("alert-text", "danger")
+            hl.addWidget(lbl_pwr)
+            hl.addStretch()
+            f_pwr.setLayout(hl)
+            l.addWidget(f_pwr)
+
+        card = QFrame()
+        card.setProperty("card", "true")
+        cl = QVBoxLayout()
+        cl.setContentsMargins(25, 25, 25, 25)
+        
+        lbl_lang = QLabel(self.t("locale"))
+        lbl_lang.setStyleSheet("font-weight: 700; margin-bottom: 8px; color: #334155;")
+        self.c_lang = QComboBox()
+        self.c_lang.addItems(["English", "Português (Brasil)", "Español", "Français", "Deutsch", "Galego"])
+        self.c_lang.currentIndexChanged.connect(self.change_language)
+        
+        cl.addWidget(lbl_lang)
+        cl.addWidget(self.c_lang)
+        card.setLayout(cl)
+        l.addWidget(card)
+        l.addSpacing(25)
+        
+        l.addStretch()
+        w.setLayout(l)
+        return w
+
+    def change_language(self, index):
+        if index in self.lang_map:
+            lang, loc, keymap, tz = self.lang_map[index]
+            self.ui_lang = lang
+            self.sys_locale = loc
+            self.conf["keymap"] = keymap
+            self.conf["timezone"] = tz
+            
+        self.c_locale.setCurrentText(self.sys_locale)
+        self.c_key.setCurrentText(self.conf["keymap"])
+        self.i_tz.setCurrentText(self.conf["timezone"])
+        
+        self.setWindowTitle(self.t("title"))
+        self.update_sidebar()
+        
+        for i, s in enumerate(self.steps):
+            self.sidebar.item(i).setText(self.t(s))
+            
+        self.lbl_loc.setText(self.t("locale"))
+        self.lbl_tz.setText(self.t("tz"))
+        self.lbl_key.setText(self.t("keymap"))
+        self.lbl_de.setText(self.t("de"))
+        self.lbl_disk.setText(self.t("disk"))
+        self.chk_luks.setText(self.t("luks"))
+        self.lbl_luks_p.setText(self.t("luks_p"))
+        self.lbl_host.setText(self.t("host"))
+        self.lbl_user.setText(self.t("user_name"))
+        self.lbl_pass.setText(self.t("pass"))
+        self.lbl_pass_c.setText(self.t("pass_c"))
+        
+        self.btn_back.setText(self.t("back"))
+        if self.stack.currentIndex() == 6:
+            self.btn_next.setText(self.t("install"))
+        elif self.stack.currentIndex() == 8:
+            self.btn_next.setText(self.t("quit"))
+        else:
+            self.btn_next.setText(self.t("next"))
+            
+        for i in range(self.stack.count()):
+            page = self.stack.widget(i)
+            for child in page.findChildren(QLabel):
+                if child.property("text_key"):
+                    child.setText(self.t(child.property("text_key")))
+
+    def create_location_page(self):
+        w = QWidget()
+        l = QVBoxLayout()
+        l.addWidget(self.create_title("step_location"))
+        
+        card = QFrame()
+        card.setProperty("card", "true")
+        cl = QVBoxLayout()
+        cl.setContentsMargins(25, 25, 25, 25)
+        
+        self.lbl_loc = QLabel(self.t("locale"))
+        self.lbl_loc.setStyleSheet("font-weight: 600; color: #334155; margin-bottom: 5px;")
+        self.c_locale = QComboBox()
+        self.c_locale.addItems(self.list_of_locales)
+        self.c_locale.setCurrentText(self.sys_locale)
+        
+        self.lbl_tz = QLabel(self.t("tz"))
+        self.lbl_tz.setStyleSheet("font-weight: 600; color: #334155; margin-bottom: 5px; margin-top: 15px;")
+        self.i_tz = QComboBox()
+        self.i_tz.addItems(self.list_of_timezones)
+        self.i_tz.setCurrentText(self.conf["timezone"])
+        
+        cl.addWidget(self.lbl_loc)
+        cl.addWidget(self.c_locale)
+        cl.addWidget(self.lbl_tz)
+        cl.addWidget(self.i_tz)
+        card.setLayout(cl)
+        
+        l.addWidget(card)
+        l.addStretch()
+        w.setLayout(l)
+        return w
+
+    def create_keyboard_page(self):
+        w = QWidget()
+        l = QVBoxLayout()
+        l.addWidget(self.create_title("step_keyboard"))
+        
+        card = QFrame()
+        card.setProperty("card", "true")
+        cl = QVBoxLayout()
+        cl.setContentsMargins(25, 25, 25, 25)
+        
+        self.lbl_key = QLabel(self.t("keymap"))
+        self.lbl_key.setStyleSheet("font-weight: 600; color: #334155; margin-bottom: 5px;")
+        self.c_key = QComboBox()
+        self.c_key.addItems(self.list_of_keymaps)
+        self.c_key.setCurrentText(self.conf["keymap"])
+        
+        cl.addWidget(self.lbl_key)
+        cl.addWidget(self.c_key)
+        card.setLayout(cl)
+        l.addWidget(card)
+        l.addStretch()
+        w.setLayout(l)
+        return w
+
+    def create_desktop_page(self):
+        w = QWidget()
+        l = QVBoxLayout()
+        l.addWidget(self.create_title("step_desktop"))
+        
+        card = QFrame()
+        card.setProperty("card", "true")
+        cl = QVBoxLayout()
+        cl.setContentsMargins(25, 25, 25, 25)
+        
+        self.lbl_de = QLabel(self.t("de"))
+        self.lbl_de.setStyleSheet("font-weight: 600; color: #334155; margin-bottom: 5px;")
+        self.c_de = QComboBox()
+        for d in self.desktops: self.c_de.addItem(d[0], d[1])
+        
+        cl.addWidget(self.lbl_de)
+        cl.addWidget(self.c_de)
+        card.setLayout(cl)
+        l.addWidget(card)
+        l.addStretch()
+        w.setLayout(l)
+        return w
+
+    def create_partitions_page(self):
+        w = QWidget()
+        l = QVBoxLayout()
+        l.addWidget(self.create_title("step_partitions"))
+        
+        card = QFrame()
+        card.setProperty("card", "true")
+        cl = QVBoxLayout()
+        cl.setContentsMargins(25, 25, 25, 25)
+        
+        self.lbl_disk = QLabel(self.t("disk"))
+        self.lbl_disk.setStyleSheet("font-weight: 600; color: #334155; margin-bottom: 5px;")
+        self.c_disk = QComboBox()
+        for d in Sys.list_disks(): self.c_disk.addItem(f"{d['model']} ({d['size']}) - {d['name']}", f"/dev/{d['name']}")
+        
+        cl.addWidget(self.lbl_disk)
+        cl.addWidget(self.c_disk)
+        cl.addSpacing(20)
+        
+        line = QFrame()
+        line.setFrameShape(QFrame.Shape.HLine)
+        line.setStyleSheet("background-color: #f1f5f9; height: 1px;")
+        cl.addWidget(line)
+        cl.addSpacing(20)
+        
+        self.chk_luks = QCheckBox(self.t("luks"))
+        self.chk_luks.setStyleSheet("font-weight: 600; color: #334155; margin-bottom: 5px;")
+        self.lbl_luks_p = QLabel(self.t("luks_p"))
+        self.lbl_luks_p.setStyleSheet("font-weight: 600; color: #64748b; margin-top: 10px; margin-bottom: 5px;")
+        self.i_luks_p = QLineEdit()
+        self.i_luks_p.setEchoMode(QLineEdit.EchoMode.Password)
+        self.i_luks_p.setEnabled(False)
+        self.chk_luks.toggled.connect(self.i_luks_p.setEnabled)
+        
+        cl.addWidget(self.chk_luks)
+        cl.addWidget(self.lbl_luks_p)
+        cl.addWidget(self.i_luks_p)
+        
+        card.setLayout(cl)
+        l.addWidget(card)
+        l.addStretch()
+        w.setLayout(l)
+        return w
+
+    def create_users_page(self):
+        w = QWidget()
+        l = QVBoxLayout()
+        l.addWidget(self.create_title("step_users"))
+        
+        card = QFrame()
+        card.setProperty("card", "true")
+        cl = QVBoxLayout()
+        cl.setContentsMargins(25, 25, 25, 25)
+        
+        lbl_style = "font-weight: 600; color: #334155; margin-bottom: 5px; margin-top: 10px;"
+        
+        self.lbl_user = QLabel(self.t("user_name"))
+        self.lbl_user.setStyleSheet(lbl_style)
+        self.i_user = QLineEdit()
+        
+        self.lbl_host = QLabel(self.t("host"))
+        self.lbl_host.setStyleSheet(lbl_style)
+        self.i_host = QLineEdit(self.conf["hostname"])
+        
+        self.lbl_pass = QLabel(self.t("pass"))
+        self.lbl_pass.setStyleSheet(lbl_style)
+        self.i_pass = QLineEdit()
+        self.i_pass.setEchoMode(QLineEdit.EchoMode.Password)
+        
+        self.lbl_pass_c = QLabel(self.t("pass_c"))
+        self.lbl_pass_c.setStyleSheet(lbl_style)
+        self.i_pass_c = QLineEdit()
+        self.i_pass_c.setEchoMode(QLineEdit.EchoMode.Password)
+        
+        cl.addWidget(self.lbl_user)
+        cl.addWidget(self.i_user)
+        cl.addWidget(self.lbl_host)
+        cl.addWidget(self.i_host)
+        cl.addWidget(self.lbl_pass)
+        cl.addWidget(self.i_pass)
+        cl.addWidget(self.lbl_pass_c)
+        cl.addWidget(self.i_pass_c)
+        
+        card.setLayout(cl)
+        l.addWidget(card)
+        l.addStretch()
+        w.setLayout(l)
+        return w
+
+    def create_summary_page(self):
+        w = QWidget()
+        l = QVBoxLayout()
+        l.addWidget(self.create_title("step_summary"))
+        
+        self.lbl_sum_warn = QLabel(self.t("summary_warn"))
+        self.lbl_sum_warn.setStyleSheet("background-color: #fef2f2; color: #991b1b; padding: 20px; border-radius: 12px; font-weight: 600; border: 1px solid #fca5a5; font-size: 15px;")
+        self.lbl_sum_warn.setWordWrap(True)
+        
+        self.lbl_sum_text = QTextEdit()
+        self.lbl_sum_text.setReadOnly(True)
+        self.lbl_sum_text.setStyleSheet("border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; background-color: white; font-size: 15px;")
+        
+        l.addWidget(self.lbl_sum_warn)
+        l.addSpacing(15)
+        l.addWidget(self.lbl_sum_text)
+        w.setLayout(l)
+        return w
+
+    def populate_summary(self):
+        html = f"""
+        <style>
+            h3 {{ color: #0f172a; margin-bottom: 8px; font-size: 17px; font-family: -apple-system, sans-serif; font-weight: 700; }}
+            p {{ color: #475569; margin-top: 0; margin-bottom: 18px; font-family: -apple-system, sans-serif; font-size: 15px; }}
+            hr {{ border: 0; border-top: 1px solid #f1f5f9; margin: 15px 0; }}
+        </style>
+        <h3>{self.t("step_location")}</h3>
+        <p>{self.sys_locale} • {self.conf['timezone']}</p>
+        <hr>
+        <h3>{self.t("step_keyboard")}</h3>
+        <p>{self.conf['keymap']}</p>
+        <hr>
+        <h3>{self.t("step_desktop")}</h3>
+        <p>{self.conf['de_name']}</p>
+        <hr>
+        <h3>{self.t("step_partitions")}</h3>
+        <p>{self.conf['disk']} <br>LUKS: {'Enabled' if self.conf['luks'] else 'Disabled'}</p>
+        <hr>
+        <h3>{self.t("step_users")}</h3>
+        <p>{self.conf['user']} @ {self.conf['hostname']}</p>
+        """
+        self.lbl_sum_text.setHtml(html)
+
+    def create_install_page(self):
+        w = QWidget()
+        l = QVBoxLayout()
+        l.addWidget(self.create_title("step_install"))
+        
+        self.pbar = QProgressBar()
+        self.pbar.setRange(0, 0) 
+        
+        self.txt_log = QTextEdit()
+        self.txt_log.setProperty("log", "true")
+        self.txt_log.setReadOnly(True)
+        
+        l.addWidget(self.pbar)
+        l.addSpacing(25)
+        l.addWidget(self.txt_log)
+        w.setLayout(l)
+        return w
+
+    def create_finish_page(self):
+        w = QWidget()
+        l = QVBoxLayout()
+        l.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        icon_lbl = QLabel()
+        pm = self.get_nav_icon("check_btn").pixmap(100, 100)
+        if pm.isNull():
+             icon_lbl.setText("✓")
+             icon_lbl.setStyleSheet("font-size: 100px; color: #22c55e;")
+        else:
+            icon_lbl.setPixmap(pm)
+        icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        title = QLabel(self.t("finish_msg"))
+        title.setProperty("heading", "true")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        sub = QLabel(self.t("finish_sub"))
+        sub.setProperty("subheading", "true")
+        sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        sub.setWordWrap(True)
+        
+        l.addStretch()
+        l.addWidget(icon_lbl)
+        l.addSpacing(35)
+        l.addWidget(title)
+        l.addWidget(sub)
+        l.addStretch()
+        w.setLayout(l)
+        return w
+
+    def validate_current_page(self):
+        idx = self.stack.currentIndex()
+        if idx == 1:
+            self.sys_locale = self.c_locale.currentText()
+            self.conf["timezone"] = self.i_tz.currentText()
+        elif idx == 2:
+            self.conf["keymap"] = self.c_key.currentText()
+        elif idx == 3:
+            self.conf["de_name"] = self.c_de.currentText()
+            self.conf["de_pkgs"] = self.c_de.currentData()
+        elif idx == 4:
+            if self.c_disk.currentIndex() == -1:
+                QMessageBox.warning(self, "Error", self.t("err_disk"))
+                return False
+            if self.chk_luks.isChecked() and not self.i_luks_p.text():
+                QMessageBox.warning(self, "Error", self.t("err_pass"))
+                return False
+            self.conf["disk"] = self.c_disk.currentData()
+            self.conf["luks"] = self.chk_luks.isChecked()
+            self.conf["luks_pass"] = self.i_luks_p.text()
+        elif idx == 5:
+            user = self.i_user.text().strip()
+            host = self.i_host.text().strip()
+            if not user or not host:
+                QMessageBox.warning(self, "Error", self.t("err_user"))
+                return False
+            p1, p2 = self.i_pass.text(), self.i_pass_c.text()
+            if not p1 or p1 != p2:
+                QMessageBox.warning(self, "Error", self.t("err_pass"))
+                return False
+            self.conf["user"] = user
+            self.conf["hostname"] = host
+            self.conf["pass"] = p1
+        return True
+
+    def go_next(self):
+        idx = self.stack.currentIndex()
+        
+        if not self.validate_current_page():
+            return
+            
+        if idx == 5:
+            self.populate_summary()
+            self.btn_next.setText(self.t("install"))
+            self.btn_next.setIcon(self.get_nav_icon("install_btn"))
+            self.btn_next.setProperty("primary", "true")
+            self.apply_styles()
+        elif idx == 6:
+            self.start_install()
+            return
+        elif idx == 8:
+            Sys.run("reboot")
+            sys.exit(0)
+            
+        self.stack.setCurrentIndex(idx + 1)
+        self.btn_back.setEnabled(True)
+        self.update_sidebar()
+        
+        if self.stack.currentIndex() != 6 and self.stack.currentIndex() != 8:
+            self.btn_next.setText(self.t("next"))
+            self.btn_next.setIcon(self.get_nav_icon("next"))
+            if self.stack.currentIndex() != 6:
+                self.btn_next.setProperty("primary", "true")
+                self.apply_styles()
+
+    def go_back(self):
+        idx = self.stack.currentIndex()
+        if idx > 0:
+            self.stack.setCurrentIndex(idx - 1)
+            self.update_sidebar()
+            self.btn_next.setText(self.t("next"))
+            self.btn_next.setIcon(self.get_nav_icon("next"))
+            self.btn_next.setProperty("primary", "true")
+            self.apply_styles()
+            if self.stack.currentIndex() == 0:
+                self.btn_back.setEnabled(False)
+
+    def start_install(self):
+        self.stack.setCurrentIndex(7)
+        self.update_sidebar()
+        self.nav_container.hide()
+        
+        self.worker = InstallWorker(self.conf, self.sys_locale)
+        self.worker.log_msg.connect(self.txt_log.append)
+        self.worker.finished.connect(self.install_done)
+        self.worker.start()
+
+    def install_done(self, success):
+        self.pbar.setRange(0, 1)
+        self.pbar.setValue(1)
+        if success:
+            self.stack.setCurrentIndex(8)
+            self.nav_container.show()
+            self.btn_back.hide()
+            self.btn_next.setText(self.t("quit"))
+            self.btn_next.setIcon(self.get_nav_icon("check_btn"))
+            self.btn_next.setProperty("primary", "true")
+            self.apply_styles()
+            self.update_sidebar()
+        else:
+            QMessageBox.critical(self, "Error", "Installation failed. Check logs.")
+            self.btn_back.setEnabled(True)
+            self.btn_next.hide()
+
+            
+    def apply_styles(self):
+        self.setStyleSheet(STYLES)
 
 if __name__ == "__main__":
-    a = Installer()
-    a.check_reqs()
-    a.select_ui_language()
-    a.menu()
+    app = QApplication(sys.argv)
+    app.setStyle("Fusion")
+    
+    if not NetUtils.check_connection():
+        QMessageBox.critical(None, "Network Error", TEXT["en"]["net_err"])
+        sys.exit(1)
+
+    if os.geteuid() != 0 and not SIMULATE:
+        QMessageBox.critical(None, "Error", "Must run as root.")
+        sys.exit(1)
+        
+    if not SIMULATE:
+        for t in ["debootstrap", "mkfs.btrfs", "parted", "cryptsetup", "wipefs", "mkfs.vfat", "wget", "btrfs"]:
+            if not shutil.which(t):
+                QMessageBox.critical(None, "Error", f"Missing tool: {t}")
+                sys.exit(1)
+            
+    gui = InstallerGUI()
+    gui.apply_styles()
+    gui.show()
+    sys.exit(app.exec())
