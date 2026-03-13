@@ -5,7 +5,7 @@ THE SYSTEM IS IN A UNSTABLE AND TESTING STATE.
 ---
 ---
 # NextFerret Linux:The Future is Not Immutable,It is Atomic and Mutable
-NextFerret Linuxis based on Debian Stable, offering a rock-solid and mutable base for everyday users, developers, and power users alike. While it inherits Debian’s legendary reliability, NextFerret Linux rejects the idea that stability must come at the cost of flexibility or modern system management.
+NextFerret Linux is based on Debian Stable, offering a rock-solid and mutable base for everyday users, developers, and power users alike. While it inherits Debian’s legendary reliability, NextFerret Linux rejects the idea that stability must come at the cost of flexibility or modern system management.
 # The Philosophy of Ownership
 
 The system is designed to give you full control over your operating system. You are free to modify, replace, and extend the system without artificial limitations. If you can’t modify a file in /usr, the operating system is not truly yours—and NextFerretOS takes that philosophy seriously.
