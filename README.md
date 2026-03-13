@@ -1,12 +1,11 @@
-
-<img width="1676" height="376" alt="NextFerretOS(2)" src="https://github.com/user-attachments/assets/027954f6-bc45-4ae0-9a49-63aa190bc8fa" />
+<img width="1676" height="376" alt="NextFerret (2)" src="https://github.com/user-attachments/assets/1aeb9ff4-d303-4b88-889e-f875654a2c2f" />
 
 ---
 THE SYSTEM IS IN A UNSTABLE AND TESTING STATE.
 ---
 ---
-# NextFerretOS:The Future is Not Immutable,It is Atomic and Mutable
-NextFerretOS is based on Debian Stable, offering a rock-solid and mutable base for everyday users, developers, and power users alike. While it inherits Debian’s legendary reliability, NextFerretOS rejects the idea that stability must come at the cost of flexibility or modern system management.
+# NextFerret Linux:The Future is Not Immutable,It is Atomic and Mutable
+NextFerret Linuxis based on Debian Stable, offering a rock-solid and mutable base for everyday users, developers, and power users alike. While it inherits Debian’s legendary reliability, NextFerret Linux rejects the idea that stability must come at the cost of flexibility or modern system management.
 # The Philosophy of Ownership
 
 The system is designed to give you full control over your operating system. You are free to modify, replace, and extend the system without artificial limitations. If you can’t modify a file in /usr, the operating system is not truly yours—and NextFerretOS takes that philosophy seriously.
@@ -22,7 +21,7 @@ Grub-Btrfs Integration: Seamlessly roll back directly from the boot menu. If an 
 
 Built for Performance: Without the "bloat" of sandboxed abstractions, your hardware's full power is dedicated to your tasks—whether you are building a minimal workstation, a gaming-ready desktop, or a specialized dev environment.
 
-NextFerretOS adapts to you — not the other way around. It’s a system that respects your expertise and protects your uptime.
+NextFerret Linux adapts to you — not the other way around. It’s a system that respects your expertise and protects your uptime.
 ---
 # Minimum Requirements
 a processor with 1 or 2 cores that haves 1 GHz
