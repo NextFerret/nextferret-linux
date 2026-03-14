@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+import os
+import sys
+import subprocess
+import argparse
+import shutil
+import glob
+import pwd
+def run(cmd, check=True):
+    try:
+        return subprocess.run(cmd, shell=True, check=check)
+    except subprocess.CalledProcessError as e:
+        if check: raise e
+        return e
+def get_host_user():
+    return os.environ.get("SUDO_USER") or os.environ.get("USER")
+def get_host_group_id():
+    return pwd.getpwnam(get_host_user()).pw_gid
+def get_host_home():
+    return os.path.expanduser(f"~{get_host_user()}")
+def mount_subsystem(path):
+    mounts = ["/proc", "/sys", "/dev", "/dev/pts", "/tmp", "/dev/dri"]
+    for mnt in mounts:
+        if os.path.exists(mnt):
+            target = f"{path}{mnt}"
+            os.makedirs(target, exist_ok=True)
+            run(f"mountpoint -q {target} || mount --bind {mnt} {target}")
+   
+    x11_path = "/tmp/.X11-unix"
+    if os.path.exists(x11_path):
+        os.makedirs(f"{path}{x11_path}", exist_ok=True)
+        run(f"mountpoint -q {path}{x11_path} || mount --bind {x11_path} {path}{x11_path}")
+   
+    run(f"chmod -R 1777 {path}/tmp", check=False)
+def umount_subsystem(path):
+    mounts = ["/dev/dri", "/tmp/.X11-unix", "/tmp", "/dev/pts", "/dev", "/sys", "/proc"]
+    for mnt in mounts:
+        target = f"{path}{mnt}"
+        if os.path.ismount(target):
+            run(f"umount -l {target}", check=False)
+def integrate_apps(name, path):
+    host_user = get_host_user()
+    host_gid = get_host_group_id()
+    host_app_dir = f"{get_host_home()}/.local/share/applications"
+    os.makedirs(host_app_dir, exist_ok=True)
+   
+    for pattern in [f"{path}/usr/share/applications/*.desktop", f"{path}/home/*/.local/share/applications/*.desktop"]:
+        for desktop_file in glob.glob(pattern):
+            filename = os.path.basename(desktop_file)
+            target_path = os.path.join(host_app_dir, f"nf-{name}-{filename}")
+            try:
+                with open(desktop_file, 'r') as f: lines = f.readlines()
+                with open(target_path, 'w') as f:
+                    for line in lines:
+                        if line.startswith("Exec="):
+                            f.write(f"Exec=sudo nf-subsystem enter --name {name} --run '{line.split('=', 1)[1].strip()}'\n")
+                        elif line.startswith("Name="):
+                            f.write(f"Name={line.split('=', 1)[1].strip()} ({name})\n")
+                        else: f.write(line)
+                os.chown(target_path, os.getuid(), host_gid)
+            except: continue
+def remove_apps(name):
+    host_app_dir = f"{get_host_home()}/.local/share/applications"
+    for desktop_file in glob.glob(f"{host_app_dir}/nf-{name}-*.desktop"):
+        try:
+            os.remove(desktop_file)
+        except:
+            continue
+def main():
+    if os.geteuid() != 0:
+        print("Error: Run as root.")
+        sys.exit(1)
+    parser = argparse.ArgumentParser(prog="nf-subsystem")
+    subparsers = parser.add_subparsers(dest="command")
+    subparsers.add_parser("list")
+   
+    cp = subparsers.add_parser("create")
+    cp.add_argument("--name", required=True)
+    cp.add_argument("--release", nargs=2)
+    cp.add_argument("--distro", default="stable")
+   
+    ep = subparsers.add_parser("enter")
+    ep.add_argument("--name", required=True)
+    ep.add_argument("--run", help="Run command")
+    ep.add_argument("--root", action="store_true")
+   
+    dp = subparsers.add_parser("delete")
+    dp.add_argument("--name", required=True)
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(0)
+    args = parser.parse_args()
+    base_dir = "/nf-tree/subsystems"
+    if args.command == "list":
+        subs = os.listdir(base_dir) if os.path.exists(base_dir) else []
+        print("Subsystems:", ", ".join(subs) if subs else "None")
+    elif args.command == "create":
+        target = f"{base_dir}/{args.name}"
+        if os.path.exists(target): sys.exit(1)
+        os.makedirs(target, exist_ok=True)
+        run(f"debootstrap {args.release[0]} {target} {args.release[1]}" if args.release else f"debootstrap {args.distro} {target}")
+        shutil.copy("/etc/resolv.conf", f"{target}/etc/resolv.conf")
+        mount_subsystem(target)
+        run(f"chroot {target} apt-get update")
+        run(f"chroot {target} apt-get install -y mesa-utils libgl1-mesa-dri libglx-mesa0 libwayland-client0 libwayland-cursor0 sudo")
+        h_user = get_host_user()
+        run(f"chroot {target} groupadd {h_user}", check=False)
+        run(f"chroot {target} useradd -m -g {h_user} -s /bin/bash {h_user}", check=False)
+        run(f"chroot {target} usermod -aG sudo {h_user}", check=False)
+        ans = input(f"Set password for {h_user}? (y/N): ")
+        run(f"chroot {target} passwd {h_user}" if ans.lower() == 'y' else f"chroot {target} passwd -d {h_user}")
+        run(f"chroot {target} sh -c 'echo \"{h_user} ALL=(ALL) NOPASSWD: ALL\" > /etc/sudoers.d/{h_user}'")
+        run(f"chroot {target} chmod 0440 /etc/sudoers.d/{h_user}")
+        integrate_apps(args.name, target)
+        umount_subsystem(target)
+    elif args.command == "enter":
+        target = f"{base_dir}/{args.name}"
+        if not os.path.exists(target): sys.exit(1)
+        mount_subsystem(target)
+        h_user = get_host_user()
+        h_home = get_host_home()
+        wayland = os.environ.get('WAYLAND_DISPLAY', '')
+        display = os.environ.get("DISPLAY", ":0")
+        run(f"xhost +local:{h_user} > /dev/null 2>&1", check=False)
+        xauth = f"{h_home}/.Xauthority"
+        xauth_mounted = False
+        if os.path.exists(xauth):
+            chroot_auth = f"{target}/home/{h_user}/.Xauthority"
+            run(f"touch {chroot_auth}", check=False)
+            run(f"mount --bind {xauth} {chroot_auth}", check=False)
+            xauth_mounted = True
+        env_cmd = f'export DISPLAY={display}; export WAYLAND_DISPLAY={wayland}; export XDG_RUNTIME_DIR=/tmp; export QT_QPA_PLATFORM=wayland; export XAUTHORITY=/home/{h_user}/.Xauthority;'
+        if wayland:
+            socket = f"{os.environ.get('XDG_RUNTIME_DIR')}/{wayland}"
+            if os.path.exists(socket):
+                run(f"mountpoint -q {target}/tmp/{wayland} || mount --bind {socket} {target}/tmp/{wayland}", check=False)
+        try:
+            cmd = f"{env_cmd} {args.run if args.run else '/bin/bash'}"
+            if args.root:
+                subprocess.call(f"chroot {target} /bin/bash -c \"{cmd}\"", shell=True)
+            else:
+                subprocess.call(f"chroot {target} /bin/su - {h_user} -c \"{cmd}\"", shell=True)
+        except KeyboardInterrupt:
+            print("\nExiting subsystem...")
+        finally:
+            if xauth_mounted:
+                run(f"umount -l {target}/home/{h_user}/.Xauthority", check=False)
+            umount_subsystem(target)
+    elif args.command == "delete":
+        target = f"{base_dir}/{args.name}"
+        if os.path.exists(target):
+            umount_subsystem(target)
+            remove_apps(args.name)
+            run(f"rm -rf {target}")
+if __name__ == "__main__":
+    main()
