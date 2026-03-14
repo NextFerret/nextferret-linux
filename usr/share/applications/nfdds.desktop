@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Install The Debian Dev Subsystem
+Comment=NextFerret Debian Subsystem
+Exec=/usr/bin/nfdds
+Icon=/usr/share/icons/hicolor/4000x4000/nfdds.png
+Terminal=true
+Categories=Utility;Development;
