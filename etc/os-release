@@ -1,13 +1,12 @@
-PRETTY_NAME="NextFerretOS GNU/Linux 1.3 (Quantum Ferret) BETA Rev 2"
-NAME="NextFerretOS GNU/Linux"
-VERSION_ID="1.3r2"
-VERSION="1.3 (Quantum Ferret) Rev 2"
-ID=nextferretos
+PRETTY_NAME="NextFerret Linux 2 (Inteligent Ferret) Stable"
+NAME="NextFerret Linux"
+VERSION_ID="2"
+VERSION="2 (inteligent Ferret)"
+ID=nextferretlinux
 ID_LIKE=debian
-NEXTFERRET_WARRANTY_EOL="February 2028"
+NEXTFERRET_WARRANTY_EOL="March 2036"
 LOGO=nextferretos
-NEXTFERRET_SUPPORT_PRODUCT="NextFerretOS 1.3r2 GNU/Linux,Based on Debian 13 Trixie/Stable,NextFerretOS is made by NextFerret and published with GPLv3"
-NEXTFERRET_BUILD_DATE:3/3/2026
-NEXTFERRET_SUPPORT_PRODUCT_ID="nextferretos1.3r2basedondebian13bythenameofferretsdontclosethisdistro(C)nextferret,2026"
-NEXTFERRET_IS_LTS=0
-NEXTFERRET_IS_STS=1
+NEXTFERRET_SUPPORT_PRODUCT="NextFerret Linux 2,Based on Debian 13 Trixie/Stable,NextFerret Linux  is made by NextFerret and published with GPLv3"
+NEXTFERRET_BUILD_DATE=7/3/2026
+NEXTFERRET_SUPPORT_PRODUCT_ID="nextferretlinux2basedondebian13bythenameofferretsdontclosethisdistro(C)nextferret,2026"
+NEXTFERRET_IS_LTS=1
