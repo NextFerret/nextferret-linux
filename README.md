@@ -1,4 +1,4 @@
-<img width="1676" height="376" alt="NextFerret (2)" src="https://github.com/user-attachments/assets/1aeb9ff4-d303-4b88-889e-f875654a2c2f" />
+<img width="3352" height="752" alt="NextFerret (2)" src="https://i.imgur.com/yU22vVO.png" />
 
 ---
 THE SYSTEM IS IN A UNSTABLE AND TESTING STATE.
