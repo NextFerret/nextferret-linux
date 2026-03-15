@@ -49,7 +49,7 @@ Credits to the original author in documentation and "About" sections.
 6.2 Intent: This software is intended to be a free and open platform. Any state-mandated barrier to entry at the OS level is considered a breach of the fundamental freedom of this software.
 
 7. Judicial Compliance and Hosting
-In the event of a valid judicial order served to a hosting platform (e.g., GitHub), the platform is authorized and required by the terms of this License to restrict access to the repository only within the specific geographic jurisdiction identified by the order, while maintaining public access for the rest of the world.
+In the event of a valid judicial order served to a hosting platform (e.g., GitHub), the platform is authorized by the terms of this License to restrict access to the repository only within the specific geographic jurisdiction identified by the order, while maintaining public access for the rest of the world.
 
 8. Contributions
 By contributing, you license your contribution under NFLv1.1. The original author may use these contributions in any version of the software while maintaining credit.
