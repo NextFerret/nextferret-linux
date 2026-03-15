@@ -1,156 +1,162 @@
-#!/usr/bin/env python3
-import os
 import sys
+import os
 import subprocess
-import argparse
+import locale
 import shutil
-import glob
-import pwd
-def run(cmd, check=True):
-    try:
-        return subprocess.run(cmd, shell=True, check=check)
-    except subprocess.CalledProcessError as e:
-        if check: raise e
-        return e
-def get_host_user():
-    return os.environ.get("SUDO_USER") or os.environ.get("USER")
-def get_host_group_id():
-    return pwd.getpwnam(get_host_user()).pw_gid
-def get_host_home():
-    return os.path.expanduser(f"~{get_host_user()}")
-def mount_subsystem(path):
-    mounts = ["/proc", "/sys", "/dev", "/dev/pts", "/tmp", "/dev/dri"]
-    for mnt in mounts:
-        if os.path.exists(mnt):
-            target = f"{path}{mnt}"
-            os.makedirs(target, exist_ok=True)
-            run(f"mountpoint -q {target} || mount --bind {mnt} {target}")
-   
-    x11_path = "/tmp/.X11-unix"
-    if os.path.exists(x11_path):
-        os.makedirs(f"{path}{x11_path}", exist_ok=True)
-        run(f"mountpoint -q {path}{x11_path} || mount --bind {x11_path} {path}{x11_path}")
-   
-    run(f"chmod -R 1777 {path}/tmp", check=False)
-def umount_subsystem(path):
-    mounts = ["/dev/dri", "/tmp/.X11-unix", "/tmp", "/dev/pts", "/dev", "/sys", "/proc"]
-    for mnt in mounts:
-        target = f"{path}{mnt}"
-        if os.path.ismount(target):
-            run(f"umount -l {target}", check=False)
-def integrate_apps(name, path):
-    host_user = get_host_user()
-    host_gid = get_host_group_id()
-    host_app_dir = f"{get_host_home()}/.local/share/applications"
-    os.makedirs(host_app_dir, exist_ok=True)
-   
-    for pattern in [f"{path}/usr/share/applications/*.desktop", f"{path}/home/*/.local/share/applications/*.desktop"]:
-        for desktop_file in glob.glob(pattern):
-            filename = os.path.basename(desktop_file)
-            target_path = os.path.join(host_app_dir, f"nf-{name}-{filename}")
-            try:
-                with open(desktop_file, 'r') as f: lines = f.readlines()
-                with open(target_path, 'w') as f:
-                    for line in lines:
-                        if line.startswith("Exec="):
-                            f.write(f"Exec=sudo nf-subsystem enter --name {name} --run '{line.split('=', 1)[1].strip()}'\n")
-                        elif line.startswith("Name="):
-                            f.write(f"Name={line.split('=', 1)[1].strip()} ({name})\n")
-                        else: f.write(line)
-                os.chown(target_path, os.getuid(), host_gid)
-            except: continue
-def remove_apps(name):
-    host_app_dir = f"{get_host_home()}/.local/share/applications"
-    for desktop_file in glob.glob(f"{host_app_dir}/nf-{name}-*.desktop"):
+from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
+                             QLabel, QPushButton, QProgressBar)
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
+
+class InstallWorker(QThread):
+    progress = pyqtSignal(int)
+    finished = pyqtSignal()
+
+    def run(self):
+        self.progress.emit(20)
         try:
-            os.remove(desktop_file)
-        except:
-            continue
-def main():
-    if os.geteuid() != 0:
-        print("Error: Run as root.")
-        sys.exit(1)
-    parser = argparse.ArgumentParser(prog="nf-subsystem")
-    subparsers = parser.add_subparsers(dest="command")
-    subparsers.add_parser("list")
-   
-    cp = subparsers.add_parser("create")
-    cp.add_argument("--name", required=True)
-    cp.add_argument("--release", nargs=2)
-    cp.add_argument("--distro", default="stable")
-   
-    ep = subparsers.add_parser("enter")
-    ep.add_argument("--name", required=True)
-    ep.add_argument("--run", help="Run command")
-    ep.add_argument("--root", action="store_true")
-   
-    dp = subparsers.add_parser("delete")
-    dp.add_argument("--name", required=True)
-    if len(sys.argv) == 1:
-        parser.print_help()
-        sys.exit(0)
-    args = parser.parse_args()
-    base_dir = "/nf-tree/subsystems"
-    if args.command == "list":
-        subs = os.listdir(base_dir) if os.path.exists(base_dir) else []
-        print("Subsystems:", ", ".join(subs) if subs else "None")
-    elif args.command == "create":
-        target = f"{base_dir}/{args.name}"
-        if os.path.exists(target): sys.exit(1)
-        os.makedirs(target, exist_ok=True)
-        run(f"debootstrap {args.release[0]} {target} {args.release[1]}" if args.release else f"debootstrap {args.distro} {target}")
-        shutil.copy("/etc/resolv.conf", f"{target}/etc/resolv.conf")
-        mount_subsystem(target)
-        run(f"chroot {target} apt-get update")
-        run(f"chroot {target} apt-get install -y mesa-utils libgl1-mesa-dri libglx-mesa0 libwayland-client0 libwayland-cursor0 sudo")
-        h_user = get_host_user()
-        run(f"chroot {target} groupadd {h_user}", check=False)
-        run(f"chroot {target} useradd -m -g {h_user} -s /bin/bash {h_user}", check=False)
-        run(f"chroot {target} usermod -aG sudo {h_user}", check=False)
-        ans = input(f"Set password for {h_user}? (y/N): ")
-        run(f"chroot {target} passwd {h_user}" if ans.lower() == 'y' else f"chroot {target} passwd -d {h_user}")
-        run(f"chroot {target} sh -c 'echo \"{h_user} ALL=(ALL) NOPASSWD: ALL\" > /etc/sudoers.d/{h_user}'")
-        run(f"chroot {target} chmod 0440 /etc/sudoers.d/{h_user}")
-        integrate_apps(args.name, target)
-        umount_subsystem(target)
-    elif args.command == "enter":
-        target = f"{base_dir}/{args.name}"
-        if not os.path.exists(target): sys.exit(1)
-        mount_subsystem(target)
-        h_user = get_host_user()
-        h_home = get_host_home()
-        wayland = os.environ.get('WAYLAND_DISPLAY', '')
-        display = os.environ.get("DISPLAY", ":0")
-        run(f"xhost +local:{h_user} > /dev/null 2>&1", check=False)
-        xauth = f"{h_home}/.Xauthority"
-        xauth_mounted = False
-        if os.path.exists(xauth):
-            chroot_auth = f"{target}/home/{h_user}/.Xauthority"
-            run(f"touch {chroot_auth}", check=False)
-            run(f"mount --bind {xauth} {chroot_auth}", check=False)
-            xauth_mounted = True
-        env_cmd = f'export DISPLAY={display}; export WAYLAND_DISPLAY={wayland}; export XDG_RUNTIME_DIR=/tmp; export QT_QPA_PLATFORM=wayland; export XAUTHORITY=/home/{h_user}/.Xauthority;'
-        if wayland:
-            socket = f"{os.environ.get('XDG_RUNTIME_DIR')}/{wayland}"
-            if os.path.exists(socket):
-                run(f"mountpoint -q {target}/tmp/{wayland} || mount --bind {socket} {target}/tmp/{wayland}", check=False)
-        try:
-            cmd = f"{env_cmd} {args.run if args.run else '/bin/bash'}"
-            if args.root:
-                subprocess.call(f"chroot {target} /bin/bash -c \"{cmd}\"", shell=True)
+            cmd = "sudo nf-subsystem create --name nfdds --distro stable"
+            term = shutil.which("ghostty") or shutil.which("x-terminal-emulator") or "gnome-terminal"
+            
+            if "ghostty" in term:
+                subprocess.run([term, "-e", "sh", "-c", cmd], check=True)
             else:
-                subprocess.call(f"chroot {target} /bin/su - {h_user} -c \"{cmd}\"", shell=True)
-        except KeyboardInterrupt:
-            print("\nExiting subsystem...")
-        finally:
-            if xauth_mounted:
-                run(f"umount -l {target}/home/{h_user}/.Xauthority", check=False)
-            umount_subsystem(target)
-    elif args.command == "delete":
-        target = f"{base_dir}/{args.name}"
-        if os.path.exists(target):
-            umount_subsystem(target)
-            remove_apps(args.name)
-            run(f"rm -rf {target}")
+                subprocess.run([term, "-e", f"sh -c '{cmd}'"], check=True)
+                
+            self.progress.emit(80)
+            
+            path = os.path.expanduser("~/.local/share/applications/nfdds.desktop")
+            content = [
+                "[Desktop Entry]",
+                "Type=Application",
+                "Name=Enter NextFerret Debian Dev Subsystem",
+                "Exec=nfdds-terminal",
+                "Icon=/usr/share/icons/hicolor/4000x4000/apps/nfdds.png",
+                "Terminal=true",
+                "Categories=System;Utility;"
+            ]
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w") as f:
+                f.write("\n".join(content))
+            
+            self.progress.emit(100)
+        except Exception:
+            pass
+        self.finished.emit()
+
+class NfddsSetup(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.dir_path = "/nf-tree/subsystems/nfdds"
+        
+        try:
+            user_locale = locale.getlocale()[0]
+            self.lang = user_locale[:2] if user_locale else 'en'
+        except:
+            self.lang = 'en'
+        
+        self.texts = {
+            'pt': {'title': 'Configuração do nfdds', 'welcome': 'O subsistema nfdds permite executar ferramentas avançadas em um ambiente isolado.', 'installing': 'Instalando no terminal...', 'exists': 'O nfdds já está instalado no sistema.', 'install': 'Instalar', 'open': 'Abrir Terminal', 'cancel': 'Cancelar', 'apology': ''},
+            'fr': {'title': 'Configuration de nfdds', 'welcome': 'Le sous-système nfdds permet d\'exécuter des outils avancés.', 'installing': 'Installation...', 'exists': 'nfdds est déjà installé.', 'install': 'Installer', 'open': 'Ouvrir', 'cancel': 'Annuler', 'apology': ''},
+            'gl': {'title': 'Configuración de nfdds', 'welcome': 'O subsistema nfdds permite executar ferramentas avanzadas.', 'installing': 'Instalando...', 'exists': 'O nfdds xa está instalado.', 'install': 'Instalar', 'open': 'Abrir', 'cancel': 'Cancelar', 'apology': ''},
+            'es': {'title': 'Configuración de nfdds', 'welcome': 'El subsistema nfdds permite ejecutar herramientas avanzadas.', 'installing': 'Instalando...', 'exists': 'nfdds ya está instalado.', 'install': 'Instalar', 'open': 'Abrir', 'cancel': 'Cancelar', 'apology': ''},
+            'ca': {'title': 'Configuració de nfdds', 'welcome': 'El subsistema nfdds permet d\'executar eines avançades.', 'installing': 'Instal·lant...', 'exists': 'nfdds ja està instal·lat.', 'install': 'Instal·lar', 'open': 'Obrir', 'cancel': 'Cancel·lar', 'apology': 'Sentim que l\'instal·lador no estigui completament en català.'},
+            'de': {'title': 'nfdds-Einrichtung', 'welcome': 'Das nfdds-Subsystem ermöglicht das Ausführen von Tools.', 'installing': 'Wird installiert...', 'exists': 'nfdds ist bereits installiert.', 'install': 'Installieren', 'open': 'Öffnen', 'cancel': 'Abbrechen', 'apology': 'Entschuldigung, der Installer ist incompleto.'}
+        }
+        
+        self.t = self.texts.get(self.lang, self.texts['pt'])
+        self.initUI()
+
+    def initUI(self):
+        self.setFixedSize(640, 420)
+        self.setWindowTitle("nfdds-setup")
+        self.setStyleSheet("""
+            QWidget { background-color: #ffffff; color: #202124; font-family: 'Roboto', 'Segoe UI', Arial; }
+            QLabel#title { font-size: 28px; font-weight: 400; margin-top: 10px; }
+            QLabel#desc { font-size: 14px; color: #5f6368; line-height: 1.4; }
+            QLabel#apology { font-size: 11px; color: #70757a; font-style: italic; }
+            QProgressBar { border: none; background-color: #e8eaed; height: 4px; border-radius: 2px; }
+            QProgressBar::chunk { background-color: #1a73e8; border-radius: 2px; }
+            QPushButton#primary { background-color: #1a73e8; color: white; border: none; border-radius: 4px; padding: 8px 24px; font-weight: 500; }
+            QPushButton#primary:hover { background-color: #1765cc; }
+            QPushButton#primary:disabled { background-color: #f1f3f4; color: #9aa0a6; }
+            QPushButton#secondary { background-color: white; color: #1a73e8; border: 1px solid #dadce0; border-radius: 4px; padding: 8px 24px; }
+            QPushButton#secondary:hover { background-color: #f8f9fa; }
+        """)
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(48, 48, 48, 32)
+
+        self.title_lbl = QLabel(self.t['title'])
+        self.title_lbl.setObjectName("title")
+        
+        initial_desc = self.t['exists'] if os.path.exists(self.dir_path) else self.t['welcome']
+        self.desc_lbl = QLabel(initial_desc)
+        self.desc_lbl.setObjectName("desc")
+        self.desc_lbl.setWordWrap(True)
+
+        self.pbar = QProgressBar()
+        self.pbar.setVisible(False)
+        self.pbar.setTextVisible(False)
+        self.pbar.setFixedHeight(4)
+
+        layout.addWidget(self.title_lbl)
+        layout.addSpacing(20)
+        layout.addWidget(self.desc_lbl)
+        layout.addSpacing(30)
+        layout.addWidget(self.pbar)
+
+        if self.t.get('apology'):
+            apol_lbl = QLabel(self.t['apology'])
+            apol_lbl.setObjectName("apology")
+            layout.addWidget(apol_lbl)
+
+        layout.addStretch()
+
+        btn_layout = QHBoxLayout()
+        btn_layout.addStretch()
+        
+        self.cancel_btn = QPushButton(self.t['cancel'])
+        self.cancel_btn.setObjectName("secondary")
+        self.cancel_btn.clicked.connect(self.close)
+        
+        self.action_btn = QPushButton(self.t['install'])
+        self.action_btn.setObjectName("primary")
+        
+        btn_layout.addWidget(self.cancel_btn)
+        btn_layout.addSpacing(12)
+        btn_layout.addWidget(self.action_btn)
+        layout.addLayout(btn_layout)
+
+        self.setLayout(layout)
+        
+        if os.path.exists(self.dir_path):
+            self.action_btn.setText(self.t['open'])
+            self.action_btn.clicked.connect(self.open_terminal)
+        else:
+            self.action_btn.clicked.connect(self.start_installation)
+
+    def start_installation(self):
+        self.desc_lbl.setText(self.t['installing'])
+        self.action_btn.setEnabled(False)
+        self.cancel_btn.setVisible(False)
+        self.pbar.setVisible(True)
+        self.pbar.setValue(0)
+        
+        self.worker = InstallWorker()
+        self.worker.progress.connect(self.pbar.setValue)
+        self.worker.finished.connect(self.close)
+        self.worker.start()
+
+    def open_terminal(self):
+        if shutil.which("nfdds-terminal"):
+            subprocess.Popen(["nfdds-terminal"])
+            self.close()
+        else:
+            self.desc_lbl.setText("nfdds-terminal not found.")
+
 if __name__ == "__main__":
-    main()
+    locale.setlocale(locale.LC_ALL, '')
+    app = QApplication(sys.argv)
+    window = NfddsSetup()
+    window.show()
+    sys.exit(app.exec())
