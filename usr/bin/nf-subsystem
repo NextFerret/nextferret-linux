@@ -29,7 +29,7 @@ class InstallWorker(QThread):
                 "[Desktop Entry]",
                 "Type=Application",
                 "Name=Enter NextFerret Debian Dev Subsystem",
-                "Exec=nfdds-terminal",
+                "Exec=sudo nf-subsystem enter --name nfdds",
                 "Icon=/usr/share/icons/hicolor/4000x4000/apps/nfdds.png",
                 "Terminal=true",
                 "Categories=System;Utility;"
@@ -55,12 +55,12 @@ class NfddsSetup(QWidget):
             self.lang = 'en'
         
         self.texts = {
-            'pt': {'title': 'Configuração do nfdds', 'welcome': 'O subsistema nfdds permite executar ferramentas avançadas em um ambiente isolado.', 'installing': 'Instalando no terminal...', 'exists': 'O nfdds já está instalado no sistema.', 'install': 'Instalar', 'open': 'Abrir Terminal', 'cancel': 'Cancelar', 'apology': ''},
-            'fr': {'title': 'Configuration de nfdds', 'welcome': 'Le sous-système nfdds permet d\'exécuter des outils avancés.', 'installing': 'Installation...', 'exists': 'nfdds est déjà installé.', 'install': 'Installer', 'open': 'Ouvrir', 'cancel': 'Annuler', 'apology': ''},
-            'gl': {'title': 'Configuración de nfdds', 'welcome': 'O subsistema nfdds permite executar ferramentas avanzadas.', 'installing': 'Instalando...', 'exists': 'O nfdds xa está instalado.', 'install': 'Instalar', 'open': 'Abrir', 'cancel': 'Cancelar', 'apology': ''},
-            'es': {'title': 'Configuración de nfdds', 'welcome': 'El subsistema nfdds permite ejecutar herramientas avanzadas.', 'installing': 'Instalando...', 'exists': 'nfdds ya está instalado.', 'install': 'Instalar', 'open': 'Abrir', 'cancel': 'Cancelar', 'apology': ''},
-            'ca': {'title': 'Configuració de nfdds', 'welcome': 'El subsistema nfdds permet d\'executar eines avançades.', 'installing': 'Instal·lant...', 'exists': 'nfdds ja està instal·lat.', 'install': 'Instal·lar', 'open': 'Obrir', 'cancel': 'Cancel·lar', 'apology': 'Sentim que l\'instal·lador no estigui completament en català.'},
-            'de': {'title': 'nfdds-Einrichtung', 'welcome': 'Das nfdds-Subsystem ermöglicht das Ausführen von Tools.', 'installing': 'Wird installiert...', 'exists': 'nfdds ist bereits installiert.', 'install': 'Installieren', 'open': 'Öffnen', 'cancel': 'Abbrechen', 'apology': 'Entschuldigung, der Installer ist incompleto.'}
+            'pt': {'title': 'Configuração do nfdds', 'welcome': 'O subsistema nfdds permite executar ferramentas avançadas em um ambiente isolado.', 'installing': 'Instalando no terminal...', 'exists': 'O nfdds já está instalado no sistema.', 'install': 'Instalar', 'open': 'Abrir Terminal', 'cancel': 'Cancelar'},
+            'fr': {'title': 'Configuration de nfdds', 'welcome': 'Le sous-système nfdds permet d\'exécuter des outils avancés.', 'installing': 'Installation...', 'exists': 'nfdds est déjà installé.', 'install': 'Installer', 'open': 'Ouvrir', 'cancel': 'Annuler'},
+            'gl': {'title': 'Configuración de nfdds', 'welcome': 'O subsistema nfdds permite executar ferramentas avanzadas.', 'installing': 'Instalando...', 'exists': 'O nfdds xa está instalado.', 'install': 'Instalar', 'open': 'Abrir', 'cancel': 'Cancelar'},
+            'es': {'title': 'Configuración de nfdds', 'welcome': 'El subsistema nfdds permite ejecutar herramientas avanzadas.', 'installing': 'Instalando...', 'exists': 'nfdds ya está instalado.', 'install': 'Instalar', 'open': 'Abrir', 'cancel': 'Cancelar'},
+            'ca': {'title': 'Configuració de nfdds', 'welcome': 'El subsistema nfdds permet d\'executar eines avançades.', 'installing': 'Instal·lant...', 'exists': 'nfdds ja està instal·lat.', 'install': 'Instal·lar', 'open': 'Obrir', 'cancel': 'Cancel·lar'},
+            'de': {'title': 'nfdds-Einrichtung', 'welcome': 'Das nfdds-Subsystem ermöglicht das Ausführen von Tools.', 'installing': 'Wird installiert...', 'exists': 'nfdds ist bereits installiert.', 'install': 'Installieren', 'open': 'Öffnen', 'cancel': 'Abbrechen'}
         }
         
         self.t = self.texts.get(self.lang, self.texts['pt'])
@@ -73,7 +73,6 @@ class NfddsSetup(QWidget):
             QWidget { background-color: #ffffff; color: #202124; font-family: 'Roboto', 'Segoe UI', Arial; }
             QLabel#title { font-size: 28px; font-weight: 400; margin-top: 10px; }
             QLabel#desc { font-size: 14px; color: #5f6368; line-height: 1.4; }
-            QLabel#apology { font-size: 11px; color: #70757a; font-style: italic; }
             QProgressBar { border: none; background-color: #e8eaed; height: 4px; border-radius: 2px; }
             QProgressBar::chunk { background-color: #1a73e8; border-radius: 2px; }
             QPushButton#primary { background-color: #1a73e8; color: white; border: none; border-radius: 4px; padding: 8px 24px; font-weight: 500; }
@@ -104,12 +103,6 @@ class NfddsSetup(QWidget):
         layout.addWidget(self.desc_lbl)
         layout.addSpacing(30)
         layout.addWidget(self.pbar)
-
-        if self.t.get('apology'):
-            apol_lbl = QLabel(self.t['apology'])
-            apol_lbl.setObjectName("apology")
-            layout.addWidget(apol_lbl)
-
         layout.addStretch()
 
         btn_layout = QHBoxLayout()
@@ -136,9 +129,9 @@ class NfddsSetup(QWidget):
             self.action_btn.clicked.connect(self.start_installation)
 
     def start_installation(self):
-        self.desc_lbl.setText(self.t['installing'])
-        self.action_btn.setEnabled(False)
+        self.action_btn.setEnabled(False) 
         self.cancel_btn.setVisible(False)
+        self.desc_lbl.setText(self.t['installing'])
         self.pbar.setVisible(True)
         self.pbar.setValue(0)
         
@@ -148,11 +141,14 @@ class NfddsSetup(QWidget):
         self.worker.start()
 
     def open_terminal(self):
-        if shutil.which("nfdds-terminal"):
-            subprocess.Popen(["nfdds-terminal"])
-            self.close()
+        term = shutil.which("ghostty") or shutil.which("x-terminal-emulator") or "gnome-terminal"
+        cmd = "sudo nf-subsystem enter --name nfdds"
+        
+        if "ghostty" in term:
+            subprocess.Popen([term, "-e", "sh", "-c", cmd])
         else:
-            self.desc_lbl.setText("nfdds-terminal not found.")
+            subprocess.Popen([term, "-e", f"sh -c '{cmd}'"])
+        self.close()
 
 if __name__ == "__main__":
     locale.setlocale(locale.LC_ALL, '')
