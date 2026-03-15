@@ -1,0 +1,152 @@
+import sys
+import os
+import subprocess
+import locale
+import shutil
+from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
+                             QLabel, QPushButton, QProgressBar)
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
+
+class InstallWorker(QThread):
+    progress = pyqtSignal(int)
+    finished = pyqtSignal()
+
+    def run(self):
+        self.progress.emit(20)
+        try:
+            cmd = "sudo nf-subsystem create --name nfdds --distro stable"
+            term = shutil.which("x-terminal-emulator") or shutil.which("ghostty") or "gnome-terminal"
+            
+            subprocess.run([term, "-e", "sh", "-c", cmd], check=True)
+                
+            self.progress.emit(80)
+            
+            path = os.path.expanduser("~/.local/share/applications/nfdds.desktop")
+            content = [
+                "[Desktop Entry]",
+                "Type=Application",
+                "Name=Enter NextFerret Debian Dev Subsystem",
+                "Exec=sudo nf-subsystem enter --name nfdds",
+                "Icon=/usr/share/icons/hicolor/4000x4000/apps/nfdds.png",
+                "Terminal=true",
+                "Categories=System;Utility;"
+            ]
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w") as f:
+                f.write("\n".join(content))
+            
+            self.progress.emit(100)
+        except Exception:
+            pass
+        self.finished.emit()
+
+class NfddsSetup(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.dir_path = "/nf-tree/subsystems/nfdds"
+        
+        try:
+            user_locale = locale.getlocale()[0]
+            self.lang = user_locale[:2] if user_locale else 'en'
+        except:
+            self.lang = 'en'
+        
+        self.texts = {
+            'pt': {'title': 'Configuração do nfdds', 'welcome': 'O subsistema nfdds permite executar ferramentas avançadas em um ambiente isolado.', 'installing': 'Instalando no terminal...', 'exists': 'O nfdds já está instalado no sistema.', 'install': 'Instalar', 'open': 'Abrir Terminal', 'cancel': 'Cancelar'},
+            'fr': {'title': 'Configuration de nfdds', 'welcome': 'Le sous-système nfdds permet d\'exécuter des outils avancés.', 'installing': 'Installation...', 'exists': 'nfdds est déjà installé.', 'install': 'Installer', 'open': 'Ouvrir', 'cancel': 'Annuler'},
+            'gl': {'title': 'Configuración de nfdds', 'welcome': 'O subsistema nfdds permite executar ferramentas avanzadas.', 'installing': 'Instalando...', 'exists': 'O nfdds xa está instalado.', 'install': 'Instalar', 'open': 'Abrir', 'cancel': 'Cancelar'},
+            'es': {'title': 'Configuración de nfdds', 'welcome': 'El subsistema nfdds permite ejecutar herramientas avanzadas.', 'installing': 'Instalando...', 'exists': 'nfdds ya está instalado.', 'install': 'Instalar', 'open': 'Abrir', 'cancel': 'Cancelar'},
+            'ca': {'title': 'Configuració de nfdds', 'welcome': 'El subsistema nfdds permet d\'executar eines avançades.', 'installing': 'Instal·lant...', 'exists': 'nfdds ja està instal·lat.', 'install': 'Instal·lar', 'open': 'Obrir', 'cancel': 'Cancel·lar'},
+            'de': {'title': 'nfdds-Einrichtung', 'welcome': 'Das nfdds-Subsystem ermöglicht das Ausführen von Tools.', 'installing': 'Wird installiert...', 'exists': 'nfdds ist bereits installiert.', 'install': 'Installieren', 'open': 'Öffnen', 'cancel': 'Abbrechen'}
+        }
+        
+        self.t = self.texts.get(self.lang, self.texts['pt'])
+        self.initUI()
+
+    def initUI(self):
+        self.setFixedSize(640, 420)
+        self.setWindowTitle("nfdds-setup")
+        self.setStyleSheet("""
+            QWidget { background-color: #ffffff; color: #202124; font-family: 'Roboto', 'Segoe UI', Arial; }
+            QLabel#title { font-size: 28px; font-weight: 400; margin-top: 10px; }
+            QLabel#desc { font-size: 14px; color: #5f6368; line-height: 1.4; }
+            QProgressBar { border: none; background-color: #e8eaed; height: 4px; border-radius: 2px; }
+            QProgressBar::chunk { background-color: #1a73e8; border-radius: 2px; }
+            QPushButton#primary { background-color: #1a73e8; color: white; border: none; border-radius: 4px; padding: 8px 24px; font-weight: 500; }
+            QPushButton#primary:hover { background-color: #1765cc; }
+            QPushButton#primary:disabled { background-color: #f1f3f4; color: #9aa0a6; }
+            QPushButton#secondary { background-color: white; color: #1a73e8; border: 1px solid #dadce0; border-radius: 4px; padding: 8px 24px; }
+            QPushButton#secondary:hover { background-color: #f8f9fa; }
+        """)
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(48, 48, 48, 32)
+
+        self.title_lbl = QLabel(self.t['title'])
+        self.title_lbl.setObjectName("title")
+        
+        initial_desc = self.t['exists'] if os.path.exists(self.dir_path) else self.t['welcome']
+        self.desc_lbl = QLabel(initial_desc)
+        self.desc_lbl.setObjectName("desc")
+        self.desc_lbl.setWordWrap(True)
+
+        self.pbar = QProgressBar()
+        self.pbar.setVisible(False)
+        self.pbar.setTextVisible(False)
+        self.pbar.setFixedHeight(4)
+
+        layout.addWidget(self.title_lbl)
+        layout.addSpacing(20)
+        layout.addWidget(self.desc_lbl)
+        layout.addSpacing(30)
+        layout.addWidget(self.pbar)
+        layout.addStretch()
+
+        btn_layout = QHBoxLayout()
+        btn_layout.addStretch()
+        
+        self.cancel_btn = QPushButton(self.t['cancel'])
+        self.cancel_btn.setObjectName("secondary")
+        self.cancel_btn.clicked.connect(self.close)
+        
+        self.action_btn = QPushButton(self.t['install'])
+        self.action_btn.setObjectName("primary")
+        
+        btn_layout.addWidget(self.cancel_btn)
+        btn_layout.addSpacing(12)
+        btn_layout.addWidget(self.action_btn)
+        layout.addLayout(btn_layout)
+
+        self.setLayout(layout)
+        
+        if os.path.exists(self.dir_path):
+            self.action_btn.setText(self.t['open'])
+            self.action_btn.clicked.connect(self.open_terminal)
+        else:
+            self.action_btn.clicked.connect(self.start_installation)
+
+    def start_installation(self):
+        self.action_btn.setEnabled(False) 
+        self.cancel_btn.setVisible(False)
+        self.desc_lbl.setText(self.t['installing'])
+        self.pbar.setVisible(True)
+        self.pbar.setValue(0)
+        
+        self.worker = InstallWorker()
+        self.worker.progress.connect(self.pbar.setValue)
+        self.worker.finished.connect(self.close)
+        self.worker.start()
+
+    def open_terminal(self):
+        term = shutil.which("x-terminal-emulator") or shutil.which("ghostty") or "gnome-terminal"
+        cmd = "sudo nf-subsystem enter --name nfdds"
+        
+        subprocess.Popen([term, "-e", "sh", "-c", cmd])
+        self.close()
+
+if __name__ == "__main__":
+    locale.setlocale(locale.LC_ALL, '')
+    app = QApplication(sys.argv)
+    window = NfddsSetup()
+    window.show()
+    sys.exit(app.exec())
