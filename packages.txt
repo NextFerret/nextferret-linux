@@ -1,4 +1,4 @@
-# required packages for NextFerretOS.
+# required packages for NextFerretLinux.
 7zip/stable,now 25.01+dfsg-1~deb13u1 amd64 [installed,automatic]
 accountsservice/stable,now 23.13.9-7 amd64 [installed,automatic]
 accountwizard/stable,now 4:24.12.3-1+deb13u1 amd64 [installed,automatic]
