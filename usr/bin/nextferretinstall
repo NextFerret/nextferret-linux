@@ -8,10 +8,10 @@ import shutil
 import socket
 import urllib.request
 import time
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
-                             QHBoxLayout, QLabel, QPushButton, QComboBox, 
-                             QLineEdit, QCheckBox, QStackedWidget, QMessageBox, 
-                             QTextEdit, QListWidget, QListWidgetItem, QFrame, 
+from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
+                             QHBoxLayout, QLabel, QPushButton, QComboBox,
+                             QLineEdit, QCheckBox, QStackedWidget, QMessageBox,
+                             QTextEdit, QListWidget, QListWidgetItem, QFrame,
                              QGraphicsDropShadowEffect, QProgressBar)
 from PyQt6.QtGui import QIcon, QPixmap, QColor
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
@@ -20,10 +20,11 @@ SIMULATE = "--simulate" in sys.argv
 
 FILES = [
     "/usr/bin/nf-tree",
+    "/usr/bin/napt",
+    "/usr/share/nextferret/credits",
+    "/usr/bin/nextferret-rebase",
     "/usr/bin/apt-nf-tree",
-    "/etc/os-release",
-    "/usr/share/nextferret/credits.txt",
-    "/etc/motd"
+    "/etc/napt/sources.list"
 ]
 
 STYLES = """
@@ -256,7 +257,7 @@ class InstallWorker(QThread):
         self.progress.emit(0)
         d = self.conf["disk"]
         self.log_msg.emit("Starting disk partitioning...")
-        
+
         self.run_cmd(f"wipefs -a {d}")
         self.run_cmd(f"parted -s {d} mklabel gpt")
         self.run_cmd(f"parted -s {d} mkpart ESP fat32 1MiB 513MiB")
@@ -274,7 +275,7 @@ class InstallWorker(QThread):
             root_dev = f"/dev/mapper/{self.mapper}"
 
         self.run_cmd(f"mkfs.vfat -F32 {p1}")
-        self.run_cmd(f"mkfs.btrfs -f -L NextRoot {root_dev}")
+        self.run_cmd(f"mkfs.btrfs -f -L nflinux {root_dev}")
         self.progress.emit(25)
 
         u_root = Sys.get_uuid(root_dev)
@@ -305,32 +306,48 @@ class InstallWorker(QThread):
             return
         self.progress.emit(55)
 
-        self.run_cmd(f"wget -O {self.mount}/tmp/nextferret-base.deb https://github.com/NextFerret/nextferret-linux/releases/download/basenotiso/nextferret-base_999999.99999_all.deb")
+        self.run_cmd(f"wget -O {self.mount}/tmp/nextferret-base.deb https://github.com/NextFerret/nextferret-linux/releases/download/basenotiso4/nf-base_2.1_amd64.deb")
 
         for m in ["/dev", "/dev/pts", "/proc", "/sys"]:
             self.run_cmd(f"mount --bind {m} {self.mount}{m}")
         shutil.copy("/etc/resolv.conf", f"{self.mount}/etc/resolv.conf")
-        
+
         if os.path.exists("/etc/apt/preferences.d/nextferret"):
             os.makedirs(f"{self.mount}/etc/apt/preferences.d", exist_ok=True)
             shutil.copy2("/etc/apt/preferences.d/nextferret", f"{self.mount}/etc/apt/preferences.d/nextferret")
-
-        if os.path.exists("/etc/motd"):
-            shutil.copy2("/etc/motd", f"{self.mount}/etc/motd")
 
         for file_path in FILES:
             if os.path.exists(file_path):
                 dst = f"{self.mount}{file_path}"
                 os.makedirs(os.path.dirname(dst), exist_ok=True)
                 if os.path.islink(file_path):
-                    if os.path.lexists(dst): os.remove(dst)
+                    if os.lexists(dst): os.remove(dst)
                     os.symlink(os.readlink(file_path), dst)
                 else:
                     shutil.copy2(file_path, dst)
                     if "bin" in file_path:
                         self.run_cmd(f"chmod +x {dst}")
 
-        for osf in ["/usr/lib/os-release", "/etc/lsb-release", "/etc/issue", "/etc/issue.net", "/etc/debian_version", "/usr/share/nextferret/credits.txt"]:
+        if os.path.exists("/etc/motd"):
+            try:
+                os.makedirs(f"{self.mount}/etc", exist_ok=True)
+                with open("/etc/motd", "r") as src, open(f"{self.mount}/etc/motd", "w") as dst:
+                    dst.write(src.read())
+            except: pass
+
+        if os.path.exists("/usr/lib/os-release"):
+            os.makedirs(f"{self.mount}/usr/lib", exist_ok=True)
+            shutil.copy2("/usr/lib/os-release", f"{self.mount}/usr/lib/os-release")
+        elif os.path.exists("/etc/os-release"):
+            os.makedirs(f"{self.mount}/usr/lib", exist_ok=True)
+            with open("/etc/os-release", "r") as src, open(f"{self.mount}/usr/lib/os-release", "w") as dst:
+                dst.write(src.read())
+
+        if os.path.lexists(f"{self.mount}/etc/os-release"):
+            os.remove(f"{self.mount}/etc/os-release")
+        os.symlink("../usr/lib/os-release", f"{self.mount}/etc/os-release")
+
+        for osf in ["/etc/lsb-release", "/etc/issue", "/etc/issue.net", "/etc/debian_version", "/usr/share/nextferret/credits.txt"]:
             if os.path.lexists(osf):
                 dst = f"{self.mount}{osf}"
                 os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -341,10 +358,10 @@ class InstallWorker(QThread):
         u_p2 = Sys.get_uuid(p2) if self.conf["luks"] else ""
         luks_sh = f"echo '{self.mapper} UUID={u_p2} none luks,discard,initramfs' > /etc/crypttab\napt-get install -y cryptsetup-initramfs\n" if self.conf["luks"] and u_p2 else ""
         de_sh = f"apt-get install -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold {self.conf['de_pkgs']}\n" if self.conf["de_pkgs"] else ""
-        
+
         fstab_sh = f"""
 cat << EOF > /etc/fstab
-UUID={u_root} /               btrfs   defaults,compress=zstd:1,noatime,subvol=@ 0       0
+UUID={u_root} /               btrfs   defaults,compress=zstd:1,noatime,subvol=@ 0      0
 UUID={u_root} /home           btrfs   defaults,compress=zstd:1,noatime,subvol=@home 0       0
 UUID={u_efi}  /boot/efi       vfat    defaults        0       1
 EOF
@@ -353,7 +370,15 @@ EOF
         script = f"""#!/bin/bash
 set -e
 export DEBIAN_FRONTEND=noninteractive
-dpkg-divert --package nextferret-core --add --rename --divert /etc/debian_motd /etc/motd
+
+if [ -e /etc/motd ] || [ -L /etc/motd ]; then
+    cp -a /etc/motd /etc/motd.custom_bak
+fi
+dpkg-divert --package nextferret-core --add --rename --divert /etc/debian_motd /etc/motd || true
+if [ -e /etc/motd.custom_bak ]; then
+    mv /etc/motd.custom_bak /etc/motd
+fi
+
 echo "deb http://deb.debian.org/debian trixie main contrib non-free non-free-firmware" > /etc/apt/sources.list
 echo "deb http://security.debian.org/debian-security trixie-security main contrib non-free" >> /etc/apt/sources.list
 
@@ -375,14 +400,13 @@ done
 apt-get update
 
 if [ -f /tmp/nextferret-base.deb ]; then
-    dpkg -i /tmp/nextferret-base.deb || apt-get install -f -y
+    apt-get install -y --no-install-recommends /tmp/nextferret-base.deb
 fi
 
-mkdir -p /usr/share/apt-nf-tree
-dpkg-divert --add --package nextferret-core --rename --divert /usr/share/apt-nf-tree/apt /usr/bin/apt
-ln -sf /usr/bin/apt-nf-tree /usr/bin/apt
+dpkg-divert --add --package nextferret-core --rename --divert /usr/bin/old-apt /usr/bin/apt
+ln -sf /usr/bin/napt /usr/bin/apt
 
-apt-get install -y --no-install-recommends python3 linux-image-amd64 sudo network-manager firmware-linux grub-efi-amd64-signed shim-signed locales keyboard-configuration console-setup ca-certificates plymouth plymouth-themes btrfs-progs grub-common gawk inotify-tools git make efibootmgr
+apt-get install -y --no-install-recommends python3 linux-image-amd64 sudo network-manager firmware-linux grub-efi-amd64-signed shim-signed locales keyboard-configuration console-setup ca-certificates plymouth plymouth-themes btrfs-progs grub-common gawk inotify-tools git make efibootmgr curl xz-utils
 
 sed -i "s/^# *{self.sys_locale}/{self.sys_locale}/" /etc/locale.gen || true
 locale-gen || true
@@ -427,7 +451,7 @@ rm -rf /tmp/grub-btrfs
 if [ -x /usr/bin/nf-tree ]; then
     nf-tree create first-snapshot || true
 fi
-
+napt sync
 apt-get clean
 rm /s.sh
 exit 0
@@ -454,12 +478,12 @@ class InstallerGUI(QMainWindow):
         self.ui_lang = "en"
         self.sys_locale = "en_US.UTF-8"
         self.conf = {
-            "hostname": "nextferret", "disk": None, "user": "", "pass": "", 
-            "luks": False, "luks_pass": "", "keymap": "us", "timezone": "UTC", 
+            "hostname": "nextferret", "disk": None, "user": "", "pass": "",
+            "luks": False, "luks_pass": "", "keymap": "us", "timezone": "UTC",
             "de_name": "None", "de_pkgs": ""
         }
         self.desktops = [
-            ("None (CLI)", ""), ("XFCE", "xfce4 xfce4-goodies lightdm"), ("GNOME", "gnome-core gdm3"), 
+            ("None (CLI)", ""), ("XFCE", "xfce4 xfce4-goodies lightdm"), ("GNOME", "gnome-core gdm3"),
             ("KDE Plasma", "kde-standard sddm"), ("Cinnamon", "cinnamon-core lightdm"),
             ("MATE", "mate-desktop-environment lightdm"), ("LXQt", "lxqt-core sddm")
         ]
@@ -468,14 +492,14 @@ class InstallerGUI(QMainWindow):
             2: ("es", "es_ES.UTF-8", "es", "Europe/Madrid"), 3: ("fr", "fr_FR.UTF-8", "fr", "Europe/Paris"),
             4: ("de", "de_DE.UTF-8", "de", "Europe/Berlin"), 5: ("gl", "gl_ES.UTF-8", "gl", "Europe/Madrid")
         }
-        
+
         self.list_of_locales = Sys.list_locales()
         self.list_of_keymaps = Sys.list_keymaps()
         self.list_of_timezones = Sys.list_timezones()
         self.icon_cache = {}
         self.sidebar_icon_cache = {}
-        
-        self.steps = ["step_welcome", "step_location", "step_keyboard", "step_desktop", 
+
+        self.steps = ["step_welcome", "step_location", "step_keyboard", "step_desktop",
                       "step_partitions", "step_users", "step_summary", "step_install", "step_finish"]
         self.step_keys = ["welcome", "location", "keyboard", "software", "disk", "users", "summary", "install", "finish"]
 
@@ -484,7 +508,7 @@ class InstallerGUI(QMainWindow):
 
     def t(self, key):
         return TEXT[self.ui_lang].get(key, key)
-    
+
     def preload_icons(self):
         sidebar_icons = {"welcome": "smile", "location": "map-pin", "keyboard": "grid", "software": "package", "disk": "hard-drive", "users": "users", "summary": "file-text", "install": "download-cloud", "finish": "check-circle"}
         for k, v in sidebar_icons.items():
@@ -508,12 +532,12 @@ class InstallerGUI(QMainWindow):
     def init_ui(self):
         self.setWindowTitle(self.t("title"))
         self.setMinimumSize(1150, 750)
-        
+
         main_widget = QWidget()
         main_layout = QHBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
-        
+
         self.sidebar = QListWidget()
         self.sidebar.setFixedWidth(280)
         self.sidebar.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -522,7 +546,7 @@ class InstallerGUI(QMainWindow):
         for i, s in enumerate(self.steps):
             item = QListWidgetItem(self.get_sidebar_icon(self.step_keys[i]), self.t(s))
             self.sidebar.addItem(item)
-            
+
         main_layout.addWidget(self.sidebar)
 
         right_panel = QWidget()
@@ -541,7 +565,7 @@ class InstallerGUI(QMainWindow):
         main_layout.addWidget(right_panel)
         main_widget.setLayout(main_layout)
         self.setCentralWidget(main_widget)
-        
+
         self.update_sidebar()
         self.btn_back.setEnabled(False)
 
@@ -558,7 +582,7 @@ class InstallerGUI(QMainWindow):
 
     def create_nav_bar(self):
         nav_frame = QFrame()
-        nav_frame.setProperty("card", "true") 
+        nav_frame.setProperty("card", "true")
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(30)
         shadow.setColor(QColor(0, 0, 0, 20))
@@ -630,7 +654,7 @@ class InstallerGUI(QMainWindow):
         w = QWidget()
         l = QVBoxLayout()
         l.addWidget(self.create_title("welcome_msg", "welcome_sub"))
-        
+
         if Sys.is_vm() and not SIMULATE:
             l.addWidget(self._create_alert("warn_vm", "warning"))
             l.addSpacing(15)
@@ -643,7 +667,7 @@ class InstallerGUI(QMainWindow):
         self.c_lang = QComboBox()
         self.c_lang.addItems(["English", "Português (Brasil)", "Español", "Français", "Deutsch", "Galego"])
         self.c_lang.currentIndexChanged.connect(self.change_language)
-        
+
         cl.addWidget(lbl_lang)
         cl.addWidget(self.c_lang)
         l.addWidget(card)
@@ -658,17 +682,17 @@ class InstallerGUI(QMainWindow):
             self.sys_locale = loc
             self.conf["keymap"] = keymap
             self.conf["timezone"] = tz
-            
+
         self.c_locale.setCurrentText(self.sys_locale)
         self.c_key.setCurrentText(self.conf["keymap"])
         self.i_tz.setCurrentText(self.conf["timezone"])
-        
+
         self.setWindowTitle(self.t("title"))
         self.update_sidebar()
-        
+
         for i, s in enumerate(self.steps):
             self.sidebar.item(i).setText(self.t(s))
-            
+
         self.lbl_loc.setText(self.t("locale"))
         self.lbl_tz.setText(self.t("tz"))
         self.lbl_key.setText(self.t("keymap"))
@@ -680,13 +704,13 @@ class InstallerGUI(QMainWindow):
         self.lbl_user.setText(self.t("user_name"))
         self.lbl_pass.setText(self.t("pass"))
         self.lbl_pass_c.setText(self.t("pass_c"))
-        
+
         self.btn_back.setText(self.t("back"))
         idx = self.stack.currentIndex()
         if idx == 6: self.btn_next.setText(self.t("install"))
         elif idx == 8: self.btn_next.setText(self.t("quit"))
         else: self.btn_next.setText(self.t("next"))
-            
+
         for i in range(self.stack.count()):
             page = self.stack.widget(i)
             for child in page.findChildren(QLabel):
@@ -698,22 +722,22 @@ class InstallerGUI(QMainWindow):
         l = QVBoxLayout()
         l.addWidget(self.create_title("step_location"))
         card, cl = self._create_card()
-        
+
         self.lbl_loc = self._create_label("locale")
         self.c_locale = QComboBox()
         self.c_locale.addItems(self.list_of_locales)
         self.c_locale.setCurrentText(self.sys_locale)
-        
+
         self.lbl_tz = self._create_label("tz")
         self.i_tz = QComboBox()
         self.i_tz.addItems(self.list_of_timezones)
         self.i_tz.setCurrentText(self.conf["timezone"])
-        
+
         cl.addWidget(self.lbl_loc)
         cl.addWidget(self.c_locale)
         cl.addWidget(self.lbl_tz)
         cl.addWidget(self.i_tz)
-        
+
         l.addWidget(card)
         l.addStretch()
         w.setLayout(l)
@@ -724,12 +748,12 @@ class InstallerGUI(QMainWindow):
         l = QVBoxLayout()
         l.addWidget(self.create_title("step_keyboard"))
         card, cl = self._create_card()
-        
+
         self.lbl_key = self._create_label("keymap")
         self.c_key = QComboBox()
         self.c_key.addItems(self.list_of_keymaps)
         self.c_key.setCurrentText(self.conf["keymap"])
-        
+
         cl.addWidget(self.lbl_key)
         cl.addWidget(self.c_key)
         l.addWidget(card)
@@ -742,11 +766,11 @@ class InstallerGUI(QMainWindow):
         l = QVBoxLayout()
         l.addWidget(self.create_title("step_desktop"))
         card, cl = self._create_card()
-        
+
         self.lbl_de = self._create_label("de")
         self.c_de = QComboBox()
         for d in self.desktops: self.c_de.addItem(d[0], d[1])
-        
+
         cl.addWidget(self.lbl_de)
         cl.addWidget(self.c_de)
         l.addWidget(card)
@@ -759,21 +783,21 @@ class InstallerGUI(QMainWindow):
         l = QVBoxLayout()
         l.addWidget(self.create_title("step_partitions"))
         card, cl = self._create_card()
-        
+
         self.lbl_disk = self._create_label("disk")
         self.c_disk = QComboBox()
         for d in Sys.list_disks(): self.c_disk.addItem(f"{d['model']} ({d['size']}) - {d['name']}", f"/dev/{d['name']}")
-        
+
         cl.addWidget(self.lbl_disk)
         cl.addWidget(self.c_disk)
         cl.addSpacing(20)
-        
+
         line = QFrame()
         line.setFrameShape(QFrame.Shape.HLine)
         line.setStyleSheet("background-color: #f1f5f9; height: 1px;")
         cl.addWidget(line)
         cl.addSpacing(20)
-        
+
         self.chk_luks = QCheckBox(self.t("luks"))
         self.chk_luks.setStyleSheet("font-weight: 600; color: #334155; margin-bottom: 5px;")
         self.lbl_luks_p = self._create_label("luks_p", "font-weight: 600; color: #64748b; margin-top: 10px; margin-bottom: 5px;")
@@ -781,11 +805,11 @@ class InstallerGUI(QMainWindow):
         self.i_luks_p.setEchoMode(QLineEdit.EchoMode.Password)
         self.i_luks_p.setEnabled(False)
         self.chk_luks.toggled.connect(self.i_luks_p.setEnabled)
-        
+
         cl.addWidget(self.chk_luks)
         cl.addWidget(self.lbl_luks_p)
         cl.addWidget(self.i_luks_p)
-        
+
         l.addWidget(card)
         l.addStretch()
         w.setLayout(l)
@@ -796,7 +820,7 @@ class InstallerGUI(QMainWindow):
         l = QVBoxLayout()
         l.addWidget(self.create_title("step_users"))
         card, cl = self._create_card()
-        
+
         self.lbl_user = self._create_label("user_name")
         self.i_user = QLineEdit()
         self.lbl_host = self._create_label("host")
@@ -807,10 +831,10 @@ class InstallerGUI(QMainWindow):
         self.lbl_pass_c = self._create_label("pass_c")
         self.i_pass_c = QLineEdit()
         self.i_pass_c.setEchoMode(QLineEdit.EchoMode.Password)
-        
+
         for widget in [self.lbl_user, self.i_user, self.lbl_host, self.i_host, self.lbl_pass, self.i_pass, self.lbl_pass_c, self.i_pass_c]:
             cl.addWidget(widget)
-        
+
         l.addWidget(card)
         l.addStretch()
         w.setLayout(l)
@@ -820,15 +844,15 @@ class InstallerGUI(QMainWindow):
         w = QWidget()
         l = QVBoxLayout()
         l.addWidget(self.create_title("step_summary"))
-        
+
         self.lbl_sum_warn = QLabel(self.t("summary_warn"))
         self.lbl_sum_warn.setStyleSheet("background-color: #fef2f2; color: #991b1b; padding: 20px; border-radius: 12px; font-weight: 600; border: 1px solid #fca5a5; font-size: 15px;")
         self.lbl_sum_warn.setWordWrap(True)
-        
+
         self.lbl_sum_text = QTextEdit()
         self.lbl_sum_text.setReadOnly(True)
         self.lbl_sum_text.setStyleSheet("border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; background-color: white; font-size: 15px;")
-        
+
         l.addWidget(self.lbl_sum_warn)
         l.addSpacing(15)
         l.addWidget(self.lbl_sum_text)
@@ -854,15 +878,15 @@ class InstallerGUI(QMainWindow):
         w = QWidget()
         l = QVBoxLayout()
         l.addWidget(self.create_title("step_install"))
-        
+
         self.pbar = QProgressBar()
         self.pbar.setRange(0, 100)
         self.pbar.setValue(0)
-        
+
         self.txt_log = QTextEdit()
         self.txt_log.setProperty("log", "true")
         self.txt_log.setReadOnly(True)
-        
+
         l.addWidget(self.pbar)
         l.addSpacing(25)
         l.addWidget(self.txt_log)
@@ -873,7 +897,7 @@ class InstallerGUI(QMainWindow):
         w = QWidget()
         l = QVBoxLayout()
         l.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
+
         icon_lbl = QLabel()
         pm = self.get_nav_icon("check_btn").pixmap(100, 100)
         if pm.isNull():
@@ -886,12 +910,12 @@ class InstallerGUI(QMainWindow):
         title = QLabel(self.t("finish_msg"))
         title.setProperty("heading", "true")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
+
         sub = QLabel(self.t("finish_sub"))
         sub.setProperty("subheading", "true")
         sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
         sub.setWordWrap(True)
-        
+
         l.addStretch()
         l.addWidget(icon_lbl)
         l.addSpacing(35)
@@ -942,7 +966,7 @@ class InstallerGUI(QMainWindow):
     def go_next(self):
         idx = self.stack.currentIndex()
         if not self.validate_current_page(): return
-            
+
         if idx == 5:
             self.populate_summary()
             self.btn_next.setText(self.t("install"))
@@ -955,11 +979,11 @@ class InstallerGUI(QMainWindow):
         elif idx == 8:
             Sys.run("reboot")
             sys.exit(0)
-            
+
         self.stack.setCurrentIndex(idx + 1)
         self.btn_back.setEnabled(True)
         self.update_sidebar()
-        
+
         if self.stack.currentIndex() not in (6, 8):
             self.btn_next.setText(self.t("next"))
             self.btn_next.setIcon(self.get_nav_icon("next"))
@@ -982,7 +1006,7 @@ class InstallerGUI(QMainWindow):
         self.stack.setCurrentIndex(7)
         self.update_sidebar()
         self.nav_container.hide()
-        
+
         self.worker = InstallWorker(self.conf, self.sys_locale)
         self.worker.log_msg.connect(self.txt_log.append)
         self.worker.progress.connect(self.update_progress)
@@ -1012,7 +1036,7 @@ class InstallerGUI(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
-    
+
     if not NetUtils.check_connection():
         QMessageBox.critical(None, "Network Error", TEXT["en"]["net_err"])
         sys.exit(1)
@@ -1020,13 +1044,13 @@ if __name__ == "__main__":
     if os.geteuid() != 0 and not SIMULATE:
         QMessageBox.critical(None, "Error", "Must run as root.")
         sys.exit(1)
-        
+
     if not SIMULATE:
         for t in ["debootstrap", "mkfs.btrfs", "parted", "cryptsetup", "wipefs", "mkfs.vfat", "wget", "btrfs", "efibootmgr"]:
             if not shutil.which(t):
                 QMessageBox.critical(None, "Error", f"Missing tool: {t}")
                 sys.exit(1)
-            
+
     gui = InstallerGUI()
     gui.apply_styles()
     gui.show()
