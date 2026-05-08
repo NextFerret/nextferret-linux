@@ -1,64 +1,13 @@
-NextFerret Linux License v1.1 (NFLLv1) — March 2026
-Copyright © NextFerret, 2026
-
-1. Definitions
-"Original Work" means the software, source code, and associated documentation initially released under this License.
-
-"Derivative Work" means any modification, adaptation, translation, or enhancement of the Original Work.
-
-"Distribution" means any act of sharing, selling, or providing access to the Work to third parties.
-
-"SaaS Provision" means providing the functionality of the Work to users over a network (Software as a Service).
-
-"Age-Restricted Jurisdictions" refers to any country or sovereign territory that mandates age verification or identity "gatekeeping" specifically for the installation or use of Operating Systems (OSes) at the kernel or system level (distinct from general internet content filtering).
-
-2. Grant of Rights
-Subject to the terms of this License, you are granted a worldwide, royalty-free, non-exclusive license to:
-
-Use and Study: Run the software for any purpose (personal, educational, or commercial).
-
-Modify: Create Derivative Works and adaptations.
-
-Distribute and Fork: Copy and share the Original Work or Derivative Works, provided that the conditions in Section 3, 4, and 11 are met.
-
-3. Strong Copyleft Obligations
-The NFLv1.1 is a reciprocal license. To ensure the software remains free and open:
-
-3.1 License Consistency: Any Derivative Work that you distribute or provide via SaaS must be licensed under this same License (NFLv1.1) or any later version of the NextFerret License.
-
-3.2 Source Code Availability: If you distribute the Work, you must make the complete, machine-readable source code available to recipients.
-
-3.3 Network Use (SaaS): Providing access via a network is considered Distribution. You must make the source code available to all users interacting with it.
-
-4. Attribution
-Every Distribution must include:
-
-A copy of this License.
-
-A clear statement: "Licensed under NFLLv1 by NextFerret."
-
-Credits to the original author in documentation and "About" sections.
-
-5. Commercial Use and Liberalization
-5.1 Sale of Work: Notwithstanding traditional copyleft restrictions, the sale of the Original Work or Derivative Works is expressly permitted and encouraged. You may charge any price for the Distribution of the software, provided the buyer is also granted the rights and source code required by this License.
-
-5.2 Third-Party Commercialization: You are permitted to commercialize "Declared Forks" (e.g., selling access, support, or features), provided the fork remains open-source under NFLv1.1.
-
-6. Usage Restrictions (The "No-Gatekeep" Clause)
-6.1 Prohibited Jurisdictions: This License automatically terminates and prohibits the use, distribution, or installation of the Work within any jurisdiction that requires, by law, age verification or government-id-linked identity checks to access or run an Operating System.
-6.2 Intent: This software is intended to be a free and open platform. Any state-mandated barrier to entry at the OS level is considered a breach of the fundamental freedom of this software.
-
-7. Judicial Compliance and Hosting
-In the event of a valid judicial order served to a hosting platform (e.g., GitHub), the platform is authorized by the terms of this License to restrict access to the repository only within the specific geographic jurisdiction identified by the order, while maintaining public access for the rest of the world.
-
-8. Contributions
-By contributing, you license your contribution under NFLv1.1. The original author may use these contributions in any version of the software while maintaining credit.
-
-9. Patent Grant
-This License includes a royalty-free, non-exclusive patent grant from all contributors to the user. Litigation against any contributor regarding patent infringement terminates your rights under this License.
-
-10. No Warranty & Limitation of Liability
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY.
-
-11. Termination
-Failure to comply with any term—including attempting to run this OS in an Age-Restricted Jurisdiction as defined in Section 6—results in the automatic and immediate termination of your rights.
+The NextFerret Linux License (TNLL) 1.0
+​Copyright (c) 2026 NextFerret Organization and Zeon (zeon-nf, zeonmbl_nf)
+​Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, subject to the following conditions:
+​1. Copyleft and Derivative Works
+​Any person or entity that modifies, forks, or builds upon this Software must ensure that the resulting work is also licensed under the TNLL 1.0. You may not distribute, license, or sell any derivative version of this Software under proprietary or closed-source terms. All "forks" must remain Free and Open Source Software (FOSS).
+​2. Network and SaaS Usage
+​If you run a modified version of this Software on a server and provide services to users over a network (Software as a Service), you must make the complete source code of that modified version available to those users at no charge. Failure to disclose the source code for network-based usage is a violation of this license.
+​3. Preservation of Notices
+​The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+​4. Age Restrictions and Jurisdictional Compliance
+​Notice: NextFerret Linux and the authors of this Software are not responsible for the use, distribution, or deployment of this Software in jurisdictions where age-restricted access laws or regulations apply. It is the sole responsibility of the user to ensure compliance with local laws regarding age requirements.
+​5. Disclaimer of Warranty
+​THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
