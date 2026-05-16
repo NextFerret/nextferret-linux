@@ -20,4 +20,4 @@ menuentry "NextFerret Linux 3 Desktop" {
 }
 EOF
 
-grub-mkrescue -o /nextferretos-1.3r2-nf-tree-atomic-amd64.iso /tmp/iso_build
+grub-mkrescue -o /nflinux-3-atomic-nsm.iso /tmp/iso_build
