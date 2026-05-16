@@ -19,12 +19,12 @@ from PyQt6.QtCore import Qt, QThread, pyqtSignal
 SIMULATE = "--simulate" in sys.argv
 
 FILES = [
-    "/usr/bin/nf-tree",
+    "/usr/bin/nsm",
     "/usr/bin/napt",
     "/usr/share/nextferret/credits",
-    "/usr/bin/nextferret-rebase",
     "/usr/bin/apt-nf-tree",
-    "/etc/napt/sources.list"
+    "/etc/napt/sources.list",
+    "/usr/bin/nlc"
 ]
 
 STYLES = """
@@ -53,8 +53,7 @@ QLabel[alert-text="danger"] { color: #991b1b; font-weight: 600; }
 QTextEdit[log="true"] { background-color: #0f172a; color: #4ade80; font-family: 'Consolas', monospace; border-radius: 12px; border: none; padding: 15px; font-size: 13px; }
 QProgressBar { border: none; background-color: #e2e8f0; border-radius: 8px; height: 14px; text-align: center; font-size: 12px; color: #0f172a; }
 QProgressBar::chunk { background: qlineargradient(spread:pad, x1:0, y1:0.5, x2:1, y2:0.5, stop:0 #3b82f6, stop:1 #60a5fa); border-radius: 8px; }
-"""
-
+""" 
 TEXT = {
     "en": {
         "title": "NextFerret Linux Installer", "step_welcome": "Welcome", "step_location": "Location", "step_keyboard": "Keyboard",
@@ -62,7 +61,7 @@ TEXT = {
         "step_install": "Installing", "step_finish": "Complete", "next": "Next Step", "back": "Previous", "install": "Install System",
         "quit": "Reboot System", "welcome_msg": "Welcome to NextFerret Linux", "welcome_sub": "Follow the steps to configure and install your new operating system.",
         "locale": "System Language", "tz": "Timezone", "keymap": "Keyboard Layout", "de": "Desktop Environment", "disk": "Target Drive",
-        "luks": "Enable Disk Encryption (LUKS)", "luks_p": "Encryption Password", "host": "Computer Name", "user_name": "Full Name",
+        "luks": "Enable Disk Encryption (LUKS)", "luks_p": "Encryption Password", "host": "Computer Name", "user_name": "Username (no spaces)",
         "pass": "Password", "pass_c": "Confirm Password", "err_pass": "Passwords do not match or are empty.", "err_disk": "Please select a target disk.",
         "err_user": "Username and Hostname are required.", "summary_title": "Installation Summary", "summary_warn": "Warning: All data on the selected drive will be permanently erased.",
         "finish_msg": "Installation Complete", "finish_sub": "NextFerret Linux has been successfully installed. UEFI boot entry was automatically configured with efibootmgr. Remove the media and reboot.",
@@ -74,9 +73,9 @@ TEXT = {
         "step_install": "Instalando", "step_finish": "Concluído", "next": "Próximo", "back": "Voltar", "install": "Instalar",
         "quit": "Reiniciar", "welcome_msg": "Bem-vindo ao NextFerret Linux", "welcome_sub": "Siga os passos para configurar e instalar seu novo sistema.",
         "locale": "Idioma", "tz": "Fuso Horário", "keymap": "Layout", "de": "Ambiente Gráfico", "disk": "Disco de Destino",
-        "luks": "Criptografia de Disco (LUKS)", "luks_p": "Senha da Criptografia", "host": "Nome do Computador", "user_name": "Nome Completo",
+        "luks": "Criptografia de Disco (LUKS)", "luks_p": "Senha da Criptografia", "host": "Nome do Computador", "user_name": "Nome de usuário (sem espaços)",
         "pass": "Senha", "pass_c": "Confirmar Senha", "err_pass": "Senhas não conferem.", "err_disk": "Selecione um disco.",
-        "err_user": "Preencha todos os campos.", "summary_title": "Resumo da Instalação", "summary_warn": "Aviso: Todos os dados no disco selecionado serão apagados.",
+        "err_user": "Nome de usuário e hostname são obrigatórios.", "summary_title": "Resumo da Instalação", "summary_warn": "Aviso: Todos os dados no disco selecionado serão apagados.",
         "finish_msg": "Instalação Concluída", "finish_sub": "O NextFerret Linux foi instalado com sucesso. O boot UEFI foi configurado automaticamente com efibootmgr. Remova a mídia e reinicie.",
         "warn_vm": "Máquina Virtual Detectada", "warn_power": "Rodando na Bateria", "net_err": "Sem conexão com a Internet. A instalação requer rede ativa."
     },
@@ -86,9 +85,9 @@ TEXT = {
         "step_install": "Instalando", "step_finish": "Completado", "next": "Siguiente", "back": "Atrás", "install": "Instalar",
         "quit": "Reiniciar", "welcome_msg": "Bienvenido a NextFerret Linux", "welcome_sub": "Siga los pasos para configurar e instalar su nuevo sistema.",
         "locale": "Idioma", "tz": "Zona Horaria", "keymap": "Distribución de Teclado", "de": "Entorno de Escritorio", "disk": "Disco de Destino",
-        "luks": "Cifrado de Disco (LUKS)", "luks_p": "Contraseña de Cifrado", "host": "Nombre del Equipo", "user_name": "Nombre Completo",
+        "luks": "Cifrado de Disco (LUKS)", "luks_p": "Contraseña de Cifrado", "host": "Nombre del Equipo", "user_name": "Nombre de usuario (sin espacios)",
         "pass": "Contraseña", "pass_c": "Confirmar Contraseña", "err_pass": "Las contraseñas no coinciden.", "err_disk": "Seleccione un disco.",
-        "err_user": "Debe rellenar todos los campos.", "summary_title": "Resumen de Instalación", "summary_warn": "Aviso: Todos los datos en el disco seleccionado serán eliminados.",
+        "err_user": "Nombre de usuario y hostname son obligatorios.", "summary_title": "Resumen de Instalación", "summary_warn": "Aviso: Todos los datos en el disco seleccionado serán eliminados.",
         "finish_msg": "Instalación Completada", "finish_sub": "NextFerret Linux se instaló correctamente. La entrada de arranque UEFI se configuró automáticamente con efibootmgr. Retire el medio y reinicie.",
         "warn_vm": "Máquina Virtual Detectada", "warn_power": "Ejecutando con Batería", "net_err": "No se detectó conexión a Internet."
     },
@@ -98,9 +97,9 @@ TEXT = {
         "step_install": "Installation", "step_finish": "Terminé", "next": "Suivant", "back": "Retour", "install": "Installer",
         "quit": "Redémarrer", "welcome_msg": "Bienvenue sur NextFerret Linux", "welcome_sub": "Suivez les étapes pour configurer et installer votre système.",
         "locale": "Langue", "tz": "Fuseau Horaire", "keymap": "Disposition du Clavier", "de": "Environnement de Bureau", "disk": "Disque Cible",
-        "luks": "Chiffrement du Disque (LUKS)", "luks_p": "Mot de passe de Chiffrement", "host": "Nom de l'Ordinateur", "user_name": "Nom Complet",
+        "luks": "Chiffrement du Disque (LUKS)", "luks_p": "Mot de passe de Chiffrement", "host": "Nom de l'Ordinateur", "user_name": "Nom d'utilisateur (sans espaces)",
         "pass": "Mot de passe", "pass_c": "Confirmer le mot de passe", "err_pass": "Les mots de passe ne correspondent pas.", "err_disk": "Veuillez sélectionner un disque.",
-        "err_user": "Remplissez tous les champs.", "summary_title": "Résumé de l'installation", "summary_warn": "Avertissement : Toutes les données sur le disque seront effacées.",
+        "err_user": "Nom d'utilisateur et hostname requis.", "summary_title": "Résumé de l'installation", "summary_warn": "Avertissement : Toutes les données sur le disque seront effacées.",
         "finish_msg": "Installation Terminée", "finish_sub": "NextFerret Linux a été installé. L'entrée de démarrage UEFI a été configurée automatiquement avec efibootmgr. Retirez le support et redémarrez.",
         "warn_vm": "Machine Virtuelle Détectée", "warn_power": "Fonctionnement sur Batterie", "net_err": "Pas de connexion Internet."
     },
@@ -110,9 +109,9 @@ TEXT = {
         "step_install": "Installieren", "step_finish": "Abgeschlossen", "next": "Weiter", "back": "Zurück", "install": "Installieren",
         "quit": "Neustart", "welcome_msg": "Willkommen bei NextFerret Linux", "welcome_sub": "Folgen Sie den Schritten zur Konfiguration und Installation.",
         "locale": "Sprache", "tz": "Zeitzone", "keymap": "Tastaturlayout", "de": "Desktop-Umgebung", "disk": "Ziellaufwerk",
-        "luks": "Festplattenverschlüsselung (LUKS)", "luks_p": "Verschlüsselungspasswort", "host": "Computername", "user_name": "Vollständiger Name",
+        "luks": "Festplattenverschlüsselung (LUKS)", "luks_p": "Verschlüsselungspasswort", "host": "Computername", "user_name": "Benutzername (keine Leerzeichen)",
         "pass": "Passwort", "pass_c": "Passwort bestätigen", "err_pass": "Passwörter stimmen nicht überein.", "err_disk": "Bitte wählen Sie eine Festplatte aus.",
-        "err_user": "Bitte füllen Sie alle Felder aus.", "summary_title": "Zusammenfassung", "summary_warn": "Warnung: Alle Daten auf der ausgewählten Festplatte werden gelöscht.",
+        "err_user": "Benutzername und Hostname sind erforderlich.", "summary_title": "Zusammenfassung", "summary_warn": "Warnung: Alle Daten auf der ausgewählten Festplatte werden gelöscht.",
         "finish_msg": "Installation Abgeschlossen", "finish_sub": "NextFerret Linux wurde erfolgreich installiert. Der UEFI-Boot-Eintrag wurde automatisch mit efibootmgr konfiguriert. Entfernen Sie das Medium und starten Sie neu.",
         "warn_vm": "Virtuelle Maschine Erkannt", "warn_power": "Akkubetrieb Erkannt", "net_err": "Keine Internetverbindung erkannt."
     },
@@ -122,9 +121,9 @@ TEXT = {
         "step_install": "Instalando", "step_finish": "Completado", "next": "Seguinte", "back": "Atrás", "install": "Instalar",
         "quit": "Reiniciar", "welcome_msg": "Benvido a NextFerret Linux", "welcome_sub": "Siga os pasos para configurar e instalar o seu novo sistema.",
         "locale": "Idioma do Sistema", "tz": "Fuso Horario", "keymap": "Distribución do Teclado", "de": "Entorno de Escritorio", "disk": "Unidade de Destino",
-        "luks": "Activar Cifrado de Disco (LUKS)", "luks_p": "Contrasinal de Cifrado", "host": "Nome do Computador", "user_name": "Nome Completo",
+        "luks": "Activar Cifrado de Disco (LUKS)", "luks_p": "Contrasinal de Cifrado", "host": "Nome do Computador", "user_name": "Nome de usuario (sen espazos)",
         "pass": "Contrasinal", "pass_c": "Confirmar Contrasinal", "err_pass": "Os contrasinais non coinciden.", "err_disk": "Seleccione unha unidade.",
-        "err_user": "Requírese nome de usuario e nome de host.", "summary_title": "Resumo da Instalación", "summary_warn": "Aviso: Todos os datos na unidade seleccionada serán eliminados.",
+        "err_user": "Nome de usuario e hostname son obrigatorios.", "summary_title": "Resumo da Instalación", "summary_warn": "Aviso: Todos os datos na unidade seleccionada serán eliminados.",
         "finish_msg": "Instalación Completada", "finish_sub": "NextFerret Linux instalouse correctamente. O arranque UEFI configurouse automaticamente con efibootmgr. Retire o medio e reinicie.",
         "warn_vm": "Máquina Virtual Detectada", "warn_power": "Executando con Batería", "net_err": "Non se detectou conexión a Internet."
     }
@@ -448,8 +447,8 @@ make install
 cd /
 rm -rf /tmp/grub-btrfs
 
-if [ -x /usr/bin/nf-tree ]; then
-    nf-tree create first-snapshot || true
+if [ -x /usr/bin/nsm ]; then
+    nsm create first-snapshot || true
 fi
 napt sync
 apt-get clean
