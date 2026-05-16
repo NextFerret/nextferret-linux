@@ -255,16 +255,107 @@ void umount_fs() {
     run_cmd("umount -l " + TREE_ROOT + "/sys >/dev/null 2>&1");
 }
 
-void manage_sandbox(const string& action) {
+static string get_btrfs_root_subvol_path() {
+    FILE* pipe = popen("btrfs subvolume show / 2>/dev/null | grep 'Name:' | head -1 | awk '{print $2}'", "r");
+    if (!pipe) return "";
+    char buf[512];
+    string name;
+    if (fgets(buf, sizeof(buf), pipe)) {
+        name = buf;
+        while (!name.empty() && (name.back() == '\n' || name.back() == '\r' || name.back() == ' '))
+            name.pop_back();
+    }
+    pclose(pipe);
+
+    if (name.empty() || name == "/" || name == "<FS_TREE>") return "/";
+
+    pipe = popen("btrfs subvolume show / 2>/dev/null | grep 'Path:' | head -1 | sed 's/.*Path:[[:space:]]*//'", "r");
+    if (!pipe) return name;
+    string path;
+    if (fgets(buf, sizeof(buf), pipe)) {
+        path = buf;
+        while (!path.empty() && (path.back() == '\n' || path.back() == '\r' || path.back() == ' '))
+            path.pop_back();
+    }
+    pclose(pipe);
+    return path.empty() ? name : path;
+}
+
+static string get_root_btrfs_device() {
+    FILE* pipe = popen("findmnt -n -o SOURCE / 2>/dev/null", "r");
+    if (!pipe) return "";
+    char buf[512];
+    string dev;
+    if (fgets(buf, sizeof(buf), pipe)) {
+        dev = buf;
+        while (!dev.empty() && (dev.back() == '\n' || dev.back() == '\r' || dev.back() == ' '))
+            dev.pop_back();
+    }
+    pclose(pipe);
+    size_t bracket = dev.find('[');
+    if (bracket != string::npos) dev = dev.substr(0, bracket);
+    return dev;
+}
+
+static const string BTRFS_TOP_MNT = "/nsm/napt/_btrfs_top";
+
+static bool mount_btrfs_toplevel(const string& device) {
+    run_cmd("mkdir -p " + shell_quote(BTRFS_TOP_MNT));
+    int rc = run_cmd("mount -o subvolid=5 " + shell_quote(device) + " " + shell_quote(BTRFS_TOP_MNT) + " 2>/dev/null");
+    return rc == 0;
+}
+
+static void umount_btrfs_toplevel() {
+    run_cmd("umount " + shell_quote(BTRFS_TOP_MNT) + " 2>/dev/null");
+    run_cmd("rmdir " + shell_quote(BTRFS_TOP_MNT) + " 2>/dev/null");
+}
+
+bool manage_sandbox(const string& action) {
     if (action == "create") {
         umount_fs();
-        run_cmd("btrfs subvolume delete -c " + TREE_ROOT + " >/dev/null 2>&1");
+        run_cmd("btrfs subvolume delete -c " + shell_quote(TREE_ROOT) + " >/dev/null 2>&1");
         run_cmd("mkdir -p /nsm/napt");
-        run_cmd("btrfs subvolume snapshot / " + TREE_ROOT + " >/dev/null 2>&1");
+
+        string device = get_root_btrfs_device();
+        if (device.empty()) {
+            cout << "Error: could not determine root btrfs device.\n";
+            return false;
+        }
+
+        if (!mount_btrfs_toplevel(device)) {
+            cout << "Error: could not mount btrfs top-level subvolume from " << device << ".\n";
+            return false;
+        }
+
+        string subvol_path = get_btrfs_root_subvol_path();
+        string src = BTRFS_TOP_MNT;
+        if (subvol_path != "/" && !subvol_path.empty()) {
+            src = BTRFS_TOP_MNT + "/" + subvol_path;
+        }
+
+        int rc = run_cmd("btrfs subvolume snapshot " + shell_quote(src) + " " + shell_quote(TREE_ROOT) + " >/dev/null 2>&1");
+        umount_btrfs_toplevel();
+
+        if (rc != 0) {
+            cout << "Error: btrfs snapshot of " << src << " -> " << TREE_ROOT << " failed (rc=" << rc << ").\n";
+            return false;
+        }
+
+        struct stat st;
+        if (stat(TREE_ROOT.c_str(), &st) != 0 || !S_ISDIR(st.st_mode)) {
+            cout << "Error: chroot root " << TREE_ROOT << " was not created.\n";
+            return false;
+        }
+
+        run_cmd("mkdir -p " + shell_quote(TREE_ROOT + "/tmp"));
+        return true;
+
     } else if (action == "delete") {
         umount_fs();
-        run_cmd("btrfs subvolume delete -c " + TREE_ROOT + " >/dev/null 2>&1");
+        run_cmd("btrfs subvolume delete -c " + shell_quote(TREE_ROOT) + " >/dev/null 2>&1");
+        return true;
     }
+    return false;
 }
 
 string get_latest_snapshot(const string& prefix) {
@@ -1101,6 +1192,7 @@ static void render_chroot_bar(int filled, const string& time_str) {
 
 static string rewrite_cmd_stage_debs(const string& cmd, vector<string>& staged_host_paths) {
     string result;
+    bool has_debs = false;
     size_t i = 0;
     while (i < cmd.size()) {
         if (cmd[i] == '\'') {
@@ -1108,10 +1200,16 @@ static string rewrite_cmd_stage_debs(const string& cmd, vector<string>& staged_h
             if (end == string::npos) { result += cmd.substr(i); break; }
             string token = cmd.substr(i + 1, end - i - 1);
             if (token.size() > 4 && token.substr(token.size() - 4) == ".deb") {
+                has_debs = true;
                 string filename = token.substr(token.find_last_of('/') + 1);
-                string chroot_tmp_host = TREE_ROOT + "/tmp/" + filename;
+                string chroot_tmp_dir  = TREE_ROOT + "/tmp";
+                string chroot_tmp_host = chroot_tmp_dir + "/" + filename;
                 string chroot_tmp_inner = "/tmp/" + filename;
-                run_cmd("cp " + shell_quote(token) + " " + shell_quote(chroot_tmp_host));
+                run_cmd("mkdir -p " + shell_quote(chroot_tmp_dir));
+                int rc = run_cmd("cp " + shell_quote(token) + " " + shell_quote(chroot_tmp_host));
+                if (rc != 0) {
+                    cout << "Error: failed to stage " << token << " into chroot tmp.\n";
+                }
                 staged_host_paths.push_back(chroot_tmp_host);
                 result += "'" + chroot_tmp_inner + "'";
             } else {
@@ -1133,7 +1231,10 @@ static void cleanup_staged_debs(const vector<string>& staged_host_paths) {
 
 void perform_transaction_cmd(const string& transaction_cmd, bool apply_host) {
     if (!apply_host) {
-        manage_sandbox("create");
+        if (!manage_sandbox("create")) {
+            cout << "Aborting transaction: chroot could not be created.\n";
+            return;
+        }
         mount_fs();
 
         int apt_pipe[2] = {-1, -1};
