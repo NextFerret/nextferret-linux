@@ -19,7 +19,7 @@ The power to Enforce the Harmony
 
 The power to Destroy the Harmony
 # The Components ;_;
-nsm: the snapshot manager & rebasing Tool.
+nsm: the snapshot manager
 
 napt: the apt's atomic remix
 
