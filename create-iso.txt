@@ -14,10 +14,10 @@ cat <<EOF > /tmp/iso_build/boot/grub/grub.cfg
 set default=0
 set timeout=5
 
-menuentry "NextFerret Linux 3 Desktop" {
+menuentry "Arvor Linux 3.1 Desktop" {
     linux /live/vmlinuz boot=live quiet splash
     initrd /live/initrd.img
 }
 EOF
 
-grub-mkrescue -o /nflinux-3-atomic-nsm.iso /tmp/iso_build
+grub-mkrescue -o /arvlinux-3-atomic-nsm.iso /tmp/iso_build
